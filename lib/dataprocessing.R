@@ -12,8 +12,8 @@ for( i in 1:length(line)){
    eachline= line[[i]]
    
   if(grepl('^A',eachline)){
-    web.feature<-c(feature,unlist(strsplit(eachline, ","))[2])
-    web.featurename<-c(featurename,unlist(strsplit(eachline, ","))[4])
+    web.feature<-c(web.feature,unlist(strsplit(eachline, ","))[2])
+    web.featurename<-c(web.featurename,unlist(strsplit(eachline, ","))[4])
     }
 }
 length(web.feature)
@@ -30,11 +30,12 @@ for( i in 1:length(line)){
   
   if(grepl('^V',eachline)){
     visit=unlist(strsplit(eachline, ","))[2]
-    idx=which(feature == visit) 
+    idx=which(web.feature == visit) 
     web.train[case,idx]=1
   }
 }
   
+colnames(web.train)<-web.feature
 save(web.train,file="~/Desktop/Proj4/web.train.Rdata")
 
 
@@ -53,21 +54,21 @@ for( i in 1:length(line)){
   
   if(grepl('^V',eachline)){
     visit=unlist(strsplit(eachline, ","))[2]
-    idx=which(feature == visit) 
+    idx=which(web.feature == visit) 
     web.test[case,idx]=1
   }
 }
 
+colnames(web.test)<-web.feature
 save(web.test,file="~/Desktop/Proj4/web.test.Rdata")
 
-web.train.matrix<-as(train,"binaryRatingMatrix")
-web.test.matrix<-as(test,"binaryRatingMatrix")
+web.train.matrix<-as(web.train,"binaryRatingMatrix")
+web.test.matrix<-as(web.test,"binaryRatingMatrix")
 
-colnames(web.train.matrix)<-feature
-colnames(web.train.matrix)<-feature
+#colnames(web.train.matrix)<-web.feature
+#colnames(web.train.matrix)<-web.feature
 
-colnames(train)<-feature
-colnames(test)<-feature
+
 
 
 ######################eachmovie data clean########################
@@ -103,7 +104,6 @@ save(movie.test,file="~/Desktop/Proj4/movie.test.Rdata")
 
 moive.train.matrix<- as(eachmovie.matrix,"realRatingMatrix")
 moive.test.matrix <-as(eachmovie.matrix,"realRatingMatrix")
-
 
 
 # evaluation_scheme <- evaluationScheme(
