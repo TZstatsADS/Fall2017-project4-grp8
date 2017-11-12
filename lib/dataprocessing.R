@@ -78,18 +78,22 @@ range(eachmovie$movie)
 range(eachmovie$user)
 range(eachmovie$rate)
 
-eachmovie.matrix<-matrix(0,ncol=1648,nrow=74424)
 
 #library(reshape)
 #eachmoive.matrix <- cast(eachmovie, user ~ movie, value = "rate")
 
-for(i in 1: nrow(eachmovie)){
-  colno= eachmovie[i,1]
-  rowno= eachmovie[i,2]
-  rating=eachmovie[i,3]
-  eachmovie.matrix[rowno,colno]=rating
-}
-eachmovie.matrix[74424,1584]
+
+# eachmovie.matrix<-matrix(0,ncol=1648,nrow=74424)
+# for(i in 1: nrow(eachmovie)){
+#   colno= eachmovie[i,1]
+#   rowno= eachmovie[i,2]
+#   rating=eachmovie[i,3]
+#   eachmovie.matrix[rowno,colno]=rating
+# }
+# eachmovie.matrix[74424,1584]
+
+eachmovie<-eachmovie[,c(2,1,3)]
+eachmovie.matrix<-as(eachmovie,"realRatingMatrix")
 save(eachmovie.matrix,file="~/Desktop/Proj4/eachmovie.matrix.Rdata")
 
 set.seed(42)
@@ -102,8 +106,8 @@ movie.test<-eachmovie.matrix[folds==1,]
 save(movie.train,file="~/Desktop/Proj4/movie.train.Rdata")
 save(movie.test,file="~/Desktop/Proj4/movie.test.Rdata")
 
-moive.train.matrix<- as(eachmovie.matrix,"realRatingMatrix")
-moive.test.matrix <-as(eachmovie.matrix,"realRatingMatrix")
+#moive.train.matrix<- as(movie.train,"realRatingMatrix")
+#moive.test.matrix <-as(movie.train,"realRatingMatrix")
 
 
 # evaluation_scheme <- evaluationScheme(
