@@ -9,7 +9,7 @@ web_train_rank0 <- t(apply(web.train, 1, rank))
 
 ###########################
 # BEGIN spearman weights #
-spearman_w <- matrix(NA, nrow = nrow(web_train_rank0) , ncol = ncol(web_train_rank0))
+spearman_w <- matrix(NA, nrow = nrow(web_train_rank0) , ncol = nrow(web_train_rank0))
 
 for(a in 1:nrow(spearman_w)){
   for(u in 1:ncol(spearman_w)){
