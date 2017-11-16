@@ -22,3 +22,9 @@ rank_scoring <- function(predicted_rank, web_mini_test, alpha){
 ### END rank_scoring ###
 
 # rank_scoring(predicted_rank, web_mini_test, alpha)
+
+
+
+MAE<-function(predict,test){
+  return(mean(abs(predict-test)))
+}
