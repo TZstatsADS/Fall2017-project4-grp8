@@ -94,6 +94,8 @@ range(eachmovie$rate)
 
 eachmovie<-eachmovie[,c(2,1,3)]
 eachmovie.matrix<-as(eachmovie,"realRatingMatrix")
+eachmovie.matrix<-as(eachmovie.matrix,"matrix")
+
 save(eachmovie.matrix,file="~/Desktop/Proj4/eachmovie.matrix.Rdata")
 
 set.seed(42)
@@ -102,10 +104,11 @@ K <- 5
 folds <- sample(rep(1:K, each = n/K))
 #test.idx<-runif(623,min=1,max=ncol(movie.test))
 movie.test<-eachmovie.matrix[folds==1,]
-movie.test<-movie.test[,1:1000]<-0
+movie.test[,1:1000]<-NA
 
 movie.train<-eachmovie.matrix
-movie.train<-movie.train[folds==1,1000:1623]<-0
+movie.train[folds==1,1000:1623]<-NA
+
 
 save(movie.train,file="~/Desktop/Proj4/movie.train.Rdata")
 save(movie.test,file="~/Desktop/Proj4/movie.test.Rdata")
