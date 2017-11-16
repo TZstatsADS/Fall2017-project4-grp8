@@ -1,3 +1,4 @@
+# Author: Yiran Li #
 # The Spearman correlation coeffcient ρ is defined in the same manner as the Pearson correlation, except that r_alpha and r_tilda_alpha are replaced by the ranks of the respective objects.
 
 ### BEGIN Spearman correlation with variance weighting ###
