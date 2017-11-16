@@ -100,8 +100,12 @@ set.seed(42)
 n<-nrow(eachmovie.matrix)
 K <- 5
 folds <- sample(rep(1:K, each = n/K))
-movie.train<-eachmovie.matrix[folds!=1,]
+#test.idx<-runif(623,min=1,max=ncol(movie.test))
 movie.test<-eachmovie.matrix[folds==1,]
+movie.test<-movie.test[,1:1000]<-0
+
+movie.train<-eachmovie.matrix
+movie.train<-movie.train[folds==1,1000:1623]<-0
 
 save(movie.train,file="~/Desktop/Proj4/movie.train.Rdata")
 save(movie.test,file="~/Desktop/Proj4/movie.test.Rdata")
