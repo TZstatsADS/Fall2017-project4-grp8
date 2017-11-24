@@ -2,8 +2,8 @@
 library(recommenderlab)
 
 ###########Train of MSWeb##############
-#should be 372711*294
-line <- readLines("~/Desktop/proj4/anonymous-msweb.data.txt")
+#should be 32711*294
+line <- readLines("../data/MS_sample/data_train.csv")
 length(line)
 
 web.feature<-NULL
