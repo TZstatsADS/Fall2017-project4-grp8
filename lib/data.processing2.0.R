@@ -7,7 +7,6 @@ nrow = sum(webtrain[,2] == 'C')
 a = which(webtrain[,2] == 'C')
 b = diff(a)
 ncol = max(b)
-web.train.matrix<-matrix(0,nrow = nrow, ncol = ncol)
 ####################write matrix##########################
 ###########################################################
 web.feature<-NULL
@@ -28,7 +27,7 @@ for(i in 2:4151){
 d[4151] = 38026
 
 
-web.train.matrix<-matrix(0,nrow = nrow, ncol = ncol)
+web.train.matrix<-matrix(NA,nrow = nrow, ncol = ncol)
 
 for (x in 1:length(c)){
   for(y in 1:(d[x]-c[x]+1)){
@@ -39,3 +38,4 @@ length(web.feature)
 rownames(web.train.matrix) = web.feature
 #####################################################
 save(web.train.matrix,file="../output/web.train2.0.Rdata")
+write.csv(web.train.matrix,file = "../data/web.train2.0.csv")
