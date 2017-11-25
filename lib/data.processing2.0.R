@@ -51,6 +51,5 @@ movie.train.matrix = matrix(NA, nrow = nrow_movie, ncol = ncol_movie)
 
 ################ write matrix #####################
 movie.train.matrix = reshape(movietrain, idvar = "User", timevar = "Movie", direction = "wide")
-
 write.csv(movie.train.matrix,"../data/movie.train2.0.csv")
  
