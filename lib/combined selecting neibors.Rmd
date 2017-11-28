@@ -6,14 +6,17 @@ output:
   pdf_document: default
   html_document: default
 ---
-### Weight threshold and read data
+###Read data and set weight, threshold
 ```{r}
+load("../output/web.sp.sim.Rdata")
+load("../output/web.entropy.sim.Rdata")
+load("../output/web.msd.sim.Rdata")
+data1 = web.sp.sim
+data2 = web.entropy.sim
+data3 = web.msd.sim
+
 threshold = 50
 n = 6
-load("../output/webtrain_significance_weighting_n=10.Rdata")
-### you gonna replace webtrain_significance_weighting_n=5.Rdata with the matrix which is the similarity weights. My example is just same dimension for temp use.
-data = webtrain_a_matrix_10
-data = matrix(1:100,10,10)
 ```
 ### Standard: larger than threshold and max n is 5.
 ```{r,warning=FALSE}
