@@ -1,0 +1,27 @@
+---
+title: "Combined+selecting+neighborhoods"
+author: "Sijian Xuan"
+date: "November 23, 2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+### Weight threshold and read data
+```{r}
+threshold = 50
+n = 6
+load("../output/webtrain_significance_weighting_n=10.Rdata")
+### you gonna replace webtrain_significance_weighting_n=5.Rdata with the matrix which is the similarity weights. My example is just same dimension for temp use.
+data = webtrain_a_matrix_10
+data = matrix(1:100,10,10)
+```
+### Standard: larger than threshold and max n is 5.
+```{r,warning=FALSE}
+aaa<- function(x){
+  a1<- x[order(-x)][1:n]*(x[order(-x)][1:n]>=threshold)
+  a1[a1==0]<- NA
+  res<- which(x %in% a1)[1:n]
+  return(res)
+}
+t(apply(data, 1, function(x) aaa(x)))
+```

@@ -1,0 +1,95 @@
+---
+title: "Significance Weighting"
+author: "Sijian Xuan"
+date: "November 24, 2017"
+output: html_document
+---
+##### read data
+###movietrain_a = read.csv("../output/movie_train_a.csv")
+####movietrain length should be 12773985
+#### This is for MSweb data
+```{r}
+webtrain_a = read.csv("../output/webtrain_a.csv", header = FALSE)
+webtrain_a = unlist(webtrain_a)
+sqrt(length(webtrain_a)) # = 4151
+```
+##### choose the number of co-rated items
+```{r}
+print(mean(webtrain_a))
+print(sd(webtrain_a))
+```
+### It is reasonable that we choose 5, 8, 9 and 10 as the number of co-rated items.
+```{r}
+webtrain_a_n_5 = webtrain_a
+n = 5
+for (i in 1:length(webtrain_a)){
+  if (webtrain_a[i] >= n){
+    webtrain_a_n_5[i] = 1
+  }
+  else{
+    webtrain_a_n_5[i] = webtrain_a_n_5[i]/5
+  }
+}
+
+webtrain_a_matrix_5 = as.numeric(webtrain_a_n_5)
+webtrain_a_matrix_5 = matrix(webtrain_a_matrix_5, nrow = 4151, ncol = 4151)
+save(webtrain_a_matrix_5,file = "../output/webtrain_significance_weighting_n=5.Rdata")
+```
+###n=8
+```{r}
+webtrain_a_n_8 = webtrain_a
+n = 8
+for (i in 1:length(webtrain_a)){
+  if (webtrain_a[i] >= n){
+    webtrain_a_n_8[i] = 1
+  }
+  else{
+    webtrain_a_n_8[i] = webtrain_a_n_5[i]/8
+  }
+}
+
+webtrain_a_matrix_8 = as.numeric(webtrain_a_n_8)
+webtrain_a_matrix_8 = matrix(webtrain_a_matrix_8, nrow = 4151, ncol = 4151)
+save(webtrain_a_matrix_8,file = "../output/webtrain_significance_weighting_n=8.Rdata")
+```
+###n=9
+```{r}
+webtrain_a_n_9 = webtrain_a
+n = 9
+for (i in 1:length(webtrain_a)){
+  if (webtrain_a[i] >= n){
+    webtrain_a_n_9[i] = 1
+  }
+  else{
+    webtrain_a_n_9[i] = webtrain_a_n_9[i]/9
+  }
+}
+
+webtrain_a_matrix_9 = as.numeric(webtrain_a_n_9)
+webtrain_a_matrix_9 = matrix(webtrain_a_matrix_9, nrow = 4151, ncol = 4151)
+save(webtrain_a_matrix_9,file = "../output/webtrain_significance_weighting_n=9.Rdata")
+```
+###n=10
+```{r}
+webtrain_a_n_10 = webtrain_a
+n = 10
+for (i in 1:length(webtrain_a)){
+  if (webtrain_a[i] >= n){
+    webtrain_a_n_10[i] = 1
+  }
+  else{
+    webtrain_a_n_10[i] = webtrain_a_n_10[i]/10
+  }
+}
+
+webtrain_a_matrix_10 = as.numeric(webtrain_a_n_10)
+webtrain_a_matrix_10 = matrix(webtrain_a_matrix_10, nrow = 4151, ncol = 4151)
+save(webtrain_a_matrix_10,file = "../output/webtrain_significance_weighting_n=10.Rdata")
+```
+## The values that are not 1
+```{r}
+a1 = i - sum(webtrain_a_n_5 == 1)
+a2 = i - sum(webtrain_a_n_8 == 1)
+a3 = i - sum(webtrain_a_n_9 == 1)
+a4 = i - sum(webtrain_a_n_10 == 1)
+```
