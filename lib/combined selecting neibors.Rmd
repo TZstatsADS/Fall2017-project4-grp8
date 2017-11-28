@@ -26,7 +26,7 @@ hist(data3,30)
 ```
 ```{r}
 threshold1 = 0.8
-threshold2 = 10
+threshold2 = 8
 threshold3 = 0.3
 n = 20 
 ```
@@ -38,13 +38,52 @@ aaa<- function(x,threshold){
   res<- which(x %in% a1)[1:n]
   return(res)
 }
-result = t(apply(data1, 1, function(x) aaa(x,threshold1)))
-value_matrix = as.numeric(matrix(0,dim(result)[1],dim(result)[2]))
+```
+####web dataset, spearman
+```{r}
+data = data1
+threshold = threshold1
+result = t(apply(data, 1, function(x) aaa(x,threshold)))
+value_matrix = matrix(0,dim(result)[1],dim(result)[2])
 for(x in 1:4151){
+  #4151 is the dimension of 'data'
   for(y in 1:n){
-    if(value_matrix[x,y] != NA){
-      value_matrix[x,y] = 
+    if(is.na(value_matrix[x,y]) == FALSE){
+      value_matrix[x,y] = data1[x,result[x,y]]
     }
   }
 }
+save(value_matrix, file = "../output/sn_web_sp_n=20_th=0.8.Rdata")
+```
+####web dataset, entropy
+```{r}
+data = data2
+threshold = threshold2
+result = t(apply(data, 1, function(x) aaa(x,threshold)))
+value_matrix = matrix(0,dim(result)[1],dim(result)[2])
+for(x in 1:4151){
+  #4151 is the dimension of 'data'
+  for(y in 1:n){
+    if(is.na(value_matrix[x,y]) == FALSE){
+      value_matrix[x,y] = data1[x,result[x,y]]
+    }
+  }
+}
+save(value_matrix, file = "../output/sn_web_entropy_n=20_th=8.Rdata")
+```
+###web dataset, msd
+```{r}
+data = data3
+threshold = threshold3
+result = t(apply(data, 1, function(x) aaa(x,threshold)))
+value_matrix = matrix(0,dim(result)[1],dim(result)[2])
+for(x in 1:4151){
+  #4151 is the dimension of 'data'
+  for(y in 1:n){
+    if(is.na(value_matrix[x,y]) == FALSE){
+      value_matrix[x,y] = data1[x,result[x,y]]
+    }
+  }
+}
+save(value_matrix, file = "../output/sn_web_msd_n=20_th=0.2.Rdata")
 ```
