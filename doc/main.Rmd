@@ -291,7 +291,7 @@ Variance Weighting
 
 Selecting Neighbors
 ```{r}
-
+#复制combined selecting neighbors after getting data from movie 
 ```
 
 Rating Normalization
