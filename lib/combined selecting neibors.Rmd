@@ -27,7 +27,7 @@ hist(data3,30)
 ```{r}
 threshold1 = 0.8
 threshold2 = 8
-threshold3 = 0.3
+threshold3 = 0.25
 n = 20 
 ```
 ### Standard: larger than threshold and max number of estimator is n.
@@ -85,5 +85,5 @@ for(x in 1:4151){
     }
   }
 }
-save(value_matrix, file = "../output/sn_web_msd_n=20_th=0.2.Rdata")
+save(value_matrix, file = "../output/sn_web_msd_n=20_th=0.25.Rdata")
 ```
