@@ -44,11 +44,9 @@ getSpearman <- function(x,y)
 getEntropy <- function(x,y) 
 {
   library(entropy)
-  
-  p.x<-as.vector(table(x))
-  p.y<-as.vector(table(y))
-  
-  etp <- KL.empirical(p.x,p.y)
+  x[x==0]<-0.000001
+  y[y==0]<-0.000001
+  etp <- KL.empirical(x,y)
   return(etp)
 }
 
@@ -70,6 +68,7 @@ for(i in 1:d) {
     web.entropy.similarity[i,j]= getEntropy(web.train.matrix[i,],web.train.matrix[j,])
     web.msd.similarity[i,j]= getMSD(web.train.matrix[i,],web.train.matrix[j,])
   }
+  print(i)
 }
 
 makesymmetric<-function(data){
@@ -79,6 +78,10 @@ makesymmetric<-function(data){
   return(data.f)
 }
 
+# covertdis<-fucntion(data){
+#   return(1-(data/max(as.vector(data))))
+# }
+
 #web.sp.sim<-makesymmetric(web.sp.similarity) 
 #diag(web.sp.sim)<-1
 #colnames(web.sp.sim)<-web.train[1,]
@@ -86,10 +89,12 @@ web.sp.sim<-cor(t(web.train.matrix), t(web.train.matrix),method="spearman")
 save(web.sp.sim,file="~/Desktop/Proj4/web.sp.sim.Rdata")
 
 web.entropy.sim<-makesymmetric(web.entropy.similarity)
-save(web.entropy.sim,file="~/Desktop/Proj4/web.entropy.sim.Rdata")
+web.etp.sim<-1-(web.entropy.sim/max(web.entropy.sim))
+save(web.entropy.sim,file="~/Desktop/Proj4/web.etp.sim.Rdata")
 
 web.msd.sim<-makesymmetric(web.msd.similarity)
-save(web.msd.sim,file="~/Desktop/Proj4/web.msd.sim.Rdata")
+web.msdiff.sim<-1-(web.msd.sim/max(web.msd.sim))
+save(web.msdiff.sim,file="~/Desktop/Proj4/web.msdiff.sim.Rdata")
 
 #################form matrix of movie##############
 d2<-nrow(movie.train.matrix)
@@ -99,7 +104,6 @@ mv.msd.similarity<-matrix(NA,ncol=d2,nrow=d2)
 
 mv.sp.sim<-cor(t(movie.train.matrix), t(movie.train.matrix),method="spearman")
 save(mv.sp.sim,file="~/Desktop/Proj4/mv.sp.sim.Rdata")
-
 
 for(k in (1:d2-1)) {
   for(l in ((k+1):d2)){
@@ -111,9 +115,11 @@ for(k in (1:d2-1)) {
 }
 
 mv.entropy.sim<-makesymmetric(mv.entropy.similarity)
-save(mv.entropy.sim,file="~/Desktop/Proj4/mv.entropy.sim.Rdata")
+mv.etp.sim<-1-(mv.entropy.sim/max(mv.entropy.sim))
+save(mv.etp.sim,file="~/Desktop/Proj4/mv.etp.sim.Rdata")
 
 mv.msd.sim<-makesymmetric(mv.msd.similarity)
-save(mv.msd.sim,file="~/Desktop/Proj4/mv.msd.sim.Rdata")
+mv.msdiff.sim<-1-(mv.msd.sim/max(mv.msd.sim))
+save(mv.msdiff.sim,file="~/Desktop/Proj4/mv.msdiff.sim.Rdata")
 
 
