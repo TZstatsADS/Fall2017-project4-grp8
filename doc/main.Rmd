@@ -289,9 +289,151 @@ Variance Weighting
 
 ```
 
-Selecting Neighbors
+Combined Selecting Neighbors
 ```{r}
-#复制combined selecting neighbors after getting data from movie 
+###Read data and set weight, threshold
+
+load("../output/web.sp.sim.Rdata")
+load("../output/web.etp.sim.Rdata")
+load("../output/web.msdiff.sim.Rdata")
+load("../output/mv.sp.sim.Rdata")
+load("../output/mv.etp.sim.Rdata")
+load("../output/mv.msdiff.sim.Rdata")
+data1 = web.sp.sim
+diag(data1) = 0
+data2 = web.entropy.sim
+diag(data2) = 0
+data3 = web.msdiff.sim
+diag(data3) = 0
+data4 = mv.sp.sim
+diag(data4) = 0
+data5 = mv.etp.sim
+diag(data5) = 0
+data6 = mv.msdiff.sim
+diag(data6) = 0
+# dimension of 3 dataset are all 4151 dimension square matrices.
+```
+```{r}
+hist(data1,30)
+hist(data2,30)
+hist(data3,30)
+hist(data4,30)
+hist(data5,30)
+hist(data6,30)
+```
+```{r}
+threshold1 = 0.6
+threshold2 = 8
+threshold3 = 0.6
+threshold4 = 0.3
+threshold5 = 0.6
+threshold6 = 0.7
+n = 20 
+```
+### Standard: larger than threshold and max number of estimator is n.
+```{r}
+aaa<- function(x,threshold){
+  a1<- x[order(-x)][1:n]*(x[order(-x)][1:n]>=threshold)
+  a1[a1==0]<- NA
+  res<- which(x %in% a1)[1:n]
+  return(res)
+}
+```
+####web dataset, spearman
+```{r}
+data = data1
+threshold = threshold1
+result = t(apply(data, 1, function(x) aaa(x,threshold)))
+value_matrix = matrix(0,dim(result)[1],dim(result)[2])
+for(x in 1:4151){
+  #4151 is the dimension of 'data'
+  for(y in 1:n){
+    if(is.na(value_matrix[x,y]) == FALSE){
+      value_matrix[x,y] = data[x,result[x,y]]
+    }
+  }
+}
+save(value_matrix, file = "../output/sn_web_sp_n=20_th=0.6.Rdata")
+```
+####web dataset, entropy
+```{r}
+data = data2
+threshold = threshold2
+result = t(apply(data, 1, function(x) aaa(x,threshold)))
+value_matrix = matrix(0,dim(result)[1],dim(result)[2])
+for(x in 1:4151){
+  #4151 is the dimension of 'data'
+  for(y in 1:n){
+    if(is.na(value_matrix[x,y]) == FALSE){
+      value_matrix[x,y] = data[x,result[x,y]]
+    }
+  }
+}
+save(value_matrix, file = "../output/sn_web_entropy_n=20_th=8.Rdata")
+```
+###web dataset, msd
+```{r}
+data = data3
+threshold = threshold3
+result = t(apply(data, 1, function(x) aaa(x,threshold)))
+value_matrix = matrix(0,dim(result)[1],dim(result)[2])
+for(x in 1:4151){
+  #4151 is the dimension of 'data'
+  for(y in 1:n){
+    if(is.na(value_matrix[x,y]) == FALSE){
+      value_matrix[x,y] = data[x,result[x,y]]
+    }
+  }
+}
+save(value_matrix, file = "../output/sn_web_msd_n=20_th=0.6.Rdata")
+```
+###movie dataset, sp
+```{r}
+data = data4
+threshold = threshold4
+result = t(apply(data, 1, function(x) aaa(x,threshold)))
+value_matrix = matrix(0,dim(result)[1],dim(result)[2])
+for(x in 1:5055){
+  #5055 is the dimension of 'data'
+  for(y in 1:n){
+    if(is.na(value_matrix[x,y]) == FALSE){
+      value_matrix[x,y] = data[x,result[x,y]]
+    }
+  }
+}
+save(value_matrix, file = "../output/sn_movie_sp_n=20_th=0.3.Rdata")
+```
+###movie dataset, etp
+```{r}
+data = data5
+threshold = threshold5
+result = t(apply(data, 1, function(x) aaa(x,threshold)))
+value_matrix = matrix(0,dim(result)[1],dim(result)[2])
+for(x in 1:5055){
+  #5055 is the dimension of 'data'
+  for(y in 1:n){
+    if(is.na(value_matrix[x,y]) == FALSE){
+      value_matrix[x,y] = data[x,result[x,y]]
+    }
+  }
+}
+save(value_matrix, file = "../output/sn_movie_sp_n=20_th=0.6.Rdata")
+```
+###movie dataset, msd
+```{r}
+data = data6
+threshold = threshold6
+result = t(apply(data, 1, function(x) aaa(x,threshold)))
+value_matrix = matrix(0,dim(result)[1],dim(result)[2])
+for(x in 1:5055){
+  #5055 is the dimension of 'data'
+  for(y in 1:n){
+    if(is.na(value_matrix[x,y]) == FALSE){
+      value_matrix[x,y] = data[x,result[x,y]]
+    }
+  }
+}
+save(value_matrix, file = "../output/sn_movie_sp_n=20_th=0.7.Rdata")
 ```
 
 Rating Normalization
