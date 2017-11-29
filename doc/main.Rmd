@@ -302,7 +302,6 @@ for(x in 1:5055){
 }
 save(value_matrix, file = "../output/sn_movie_msd_n=20_th=0.7.Rdata")
 ```
-```
 
 ## Rating Normalization
 
@@ -313,8 +312,6 @@ return(t(apply(data[,-1],1,scale)))
 }
 ```
 
-Obviously, we can get predictions in this step. In next step, we will compare the actual value in test data to prediction. 
-
 # Step 3: Implement model-based algorithms
 
 We implement cluster model to make predictions about ratings. In the model-based algorithm, the ratings each user gives to a specific item is a random variable.  We use Bayesian Mixture to model this random variable by incorporating the information from the available ratings. We assume that each user belongs to a cluster c, where the number of clusters is determined by cross validation. 
@@ -322,11 +319,132 @@ We implement cluster model to make predictions about ratings. In the model-based
 EM-algorithm is used to iteratively update the "soft assignment" - the probability that each user belongs to a specific cluster, and the parameters - the relative cluster size and the probability that user i gives item j a rating of k given that user i belongs to cluster c.
 
 ```{r, eval=FALSE}
+#-------------------------------- Expectation  -----------------------------
+expectation <- function(mu,gamma,matrixk,c){
+  theta<-NULL
+  N<-nrow(matrixk)
+  for (i in 1:c){
+    gamma_c<-gamma[((c-1)*6+1):(6*c),]
+    gamma_c<-as.vector(t(gamma_c))
+    gamma_c<-matrix(rep(gamma_c,each=N),nrow=N)
+    Di<-matrixk*gamma_c
+    theta_i<-apply(Di,1,function(x){return(prod(x[x>0]))})
+    names(theta_i)<-NULL
+    theta<-rbind(theta,theta_i)
+  }
+  mu_repeat<-matrix(rep(mu,each=N),nrow=N)
+  upper<-t(mu_repeat)*theta
+  sum<-colSums(upper, na.rm=TRUE)
+  lower<-matrix(rep(sum,each=c),nrow=c)
+  pi<-upper/lower
+  pi[is.na(pi)]<-10^(-100)
+  return(pi)
+}###end of expectation
+
+#-------------------------------- Maximization   --------------------------------
+maximization <- function(pi,matrixk,c){
+  N<-ncol(matrixk)
+  # estimate mu
+  mu <- rowSums(pi,na.rm = TRUE)/ncol(pi)
+  
+  # estimate gamma
+  summation<-rowSums(pi,na.rm = TRUE)
+  lower<-matrix(rep(summation,each=N),nrow=N)
+  gamma_temp<-NULL
+  for (k in 1:6){
+    data<-as.matrix(matrixk)
+    data[data != k]<-0
+    data[data == k]<-1 
+    upper<-pi%*%data
+    gamma_k<-upper/t(lower)
+    gamma_k<-as.vector(t(gamma_k))
+    gamma_temp<-rbind(gamma_temp,gamma_k)
+  }### end of gamma calculation for each k 
+  gamma<-NULL
+  for (i in 1:c){
+    temp<-gamma_temp[,((i-1)*N+1):(i*N)]
+    gamma<-rbind(gamma,temp)
+  }
+  mu[is.na(mu)]<-10^(-100)
+  gamma[is.na(gamma)]<-10^(-100)
+  re<-list(mu,gamma)
+  return(re)
+}
+
+
+#---------------------------- Expectation Maximization Algorithm  -------------------------
+
+EM <- function(data,matrixk,mu_inits,gamma_inits,c,maxit=100,tol=1e-5)
+{
+  # Estimation of parameter(Initial)
+  flag <- 0
+  mu_cur <- mu_inits; gamma_cur <- gamma_inits
+  
+  # Iterate between expectation and maximization parts
+  
+  for(i in 1:maxit){
+    cur <- c(mu_cur,gamma_cur)
+    new <- maximization(expectation(mu_cur,gamma_cur,data,c),matrixk,c)
+    mu_new <- new[[1]]; gamma_new <- new[[2]]
+    new_step <- c(mu_new,gamma_new)
+ 
+    # Stop iteration if the difference between the current and new estimates is less than a tolerance level
+    if( all(abs(cur - new_step) < tol) ){ flag <- 1; break}
+  
+        # Otherwise continue iteration
+    mu_cur <- mu_new; gamma_cur <- gamma_new
+  }
+  if(!flag) warning("Didn't converge\n")
+  
+  em<-list(mu_cur, gamma_cur)
+  return(em)
+}
+
+#------------------ train data --------------------------------
+
+data_train <- read.csv("~/Downloads/data_sample/eachmovie_sample/moive_train.csv")
+data_train<-as.data.frame(data_train[,-1])
+data_train[is.na(data_train)] <- 0
+rownames(data_train)<-data_train[,1]
+data_train<-as.data.frame(data_train[,-1])
+movie.index<-substring(names(data_train), 7)
+colnames(data_train)<-1:ncol(data_train)
+
+# Construct a binary matrix for users & moives 
+data<-rep(NA,nrow(data_train))
+for (i in 1:6){
+  dat<-data_train
+  dat[dat==i]<-1
+  dat[dat!=i]<-0
+  data<-cbind(data,dat)
+}
+data<-data[,-1]
+
+# Set parameter estimates
+c<-9
+
+#mu
+rand_mu<-runif(c, min=0,max=1)
+mu_inits<-rand_mu/sum(rand_mu)
+
+#gamma
+rand<-runif(c*6*ncol(data_train),min=0,max=1)
+ar <- array(rand, dim=c(c,  ncol(data_train),6))
+arr<-matrix(rep(NA,ncol(data_train)),ncol=ncol(data_train),nrow=1)
+for (i in 1:c){
+  arr_i<-t(ar[i,,]/rowSums(ar[i,,]))
+  arr<-rbind(arr,arr_i)
+}
+gamma_inits<-arr[-1,]
+
+#--------------------Return EM Algorithm function -----------------------------
+output <- EM(data,data_train,mu_inits,gamma_inits,c)
 
 ```
 
 # Step 4: Prediction
-Web
+
+For web data
 ```{r, eval=FALSE}
 memory_based_prediction <- function(train_data, w){
   
@@ -362,10 +480,9 @@ predict.nei<-function(data,sim,nei){
   }
   return(p)
 }
-
 ```
 
-Movie
+For movie data set
 ```{r, eval=FALSE}
 predict.mv.general<-function(data,test,sim){
   #sim<-abs(sim)
@@ -421,11 +538,13 @@ predict.mv.nei<-function(data,test,sim,nei){
 }
 ```
 
+Obviously, we can get predictions in this step. In next step, we will compare the actual value in test data to prediction.
+
 # Step 5: Evaluation
 
 Ranked scoring for the first data set.
 ```{r, eval=FALSE}
-
+source("../lib/function+for+making+prediction.R")
 ```
 
 ## Mean absolute error(MAE) for the second data set.
@@ -435,8 +554,8 @@ Mean absolute error is the average of absolute value of the difference between t
 load("../output/submv_result.Rdata")
 ```
 
-We can easily find that the algorithm which possesses the lowest MAE is the most efficient collaborative filtering algorithm. Here, the best one is     .
+We can easily find that the algorithm which possesses the lowest MAE is the most efficient collaborative filtering algorithm.
 
 # Conclusion
 
-All in all, Spearman Correlation without significance weight and variance weighting is the best algorithm when neighbors are not greater than 20, threshold is equal to 0.3. It has the lowest MAE among all memory-based algorithm, which is 2.278. Web data has the highest ranked score 328.98 when is conducted mean-squared-difference without significance and variance weighting. As for model-based algorithm, (algorithm) behaved better performance with ranked score (number). So...
+All in all, Spearman Correlation without significance weight and variance weighting is the best algorithm when neighbors are not greater than 20, threshold is equal to 0.3. It has the lowest MAE among all memory-based algorithm, which is 2.278. Web data has the highest ranked score 23.38 when is conducted under significance weighting. As for model-based algorithm, the lowest MAE achieved is 1.78.
