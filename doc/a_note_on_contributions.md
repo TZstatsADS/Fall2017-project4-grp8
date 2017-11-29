@@ -6,7 +6,7 @@ We applied different variants of similarity weighting, which include Spearman, E
 
 [Contribution Statement]
 
-+ Chenyun Wu
++ Chenyun Wu: Doing data cleaning making raw data compatitabe with using. Write and output Spearman, Entropy, MSD similarity. Write Prediction function with neigborhood and output the result movie dataset. Write MAE function to evaluate movie.
 
 + Sihui Shao: Created the Expectation and the Maximization function, expected rating prediction function and implemented the EM algorithm on EachMovie data for the Cluster Model; created functions in Python to implement SimRank on EachMovie data.
 
