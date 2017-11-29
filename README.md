@@ -17,7 +17,7 @@ Term: Fall 2017
 + Project summary: 
 Implement Collaborative Filtering with different settings.
 
-![image](framework.png)
+![image](figs/framework.png)
 
 + Result:
 
