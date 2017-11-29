@@ -1,132 +1,123 @@
 ---
-title: "Project 4 - Algorithm Implementation and Evaluation"
-author: "Guo, Yajie  Li, Yiran  Shao, Nina  Wu, Chenyun  Xuan, Sijian"
-date: "11/27/2017"
+title: 'Project 4: Collaborative Filtering Algorithm'
+author: "Chenyun Wu, Sihui Shao, Sijian Xuan, Yajie Guo, Yiran Li"
 output:
-  html_document: default
-  pdf_document: 
-    latex_engine: xelatex
+  pdf_document: default
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
 ---
 
-## Step 0: Load the packages, specify directories
+In this project, we implemented collaborative filtering to make automatic predictions (filtering) about the interests of a user by collecting preferences or taste information from many users (collaborating). We also evaluated and compared a pair of algorithms for collaborative filtering. Firstly, spearman correlation, entropy, mean-squared-difference and simrank were used to get the similarity matrix, at the same time, we added significance weighting or variance weighting to similarity. Secondly, neighbors were selected by combining weighting threshold and best-n-estimator. Once the neighborhood has been selected, the ratings from those neighbors are combined to compute a prediction, after possibly scaling the ratings to a common distribution. Besides, we also tried cluster models to conduct the similar process. For evaluation part, we used ranked scoring for the first data set, while mean absolute error(MAE) was used for the movie data set.
 
-```{r}
-setwd("~/Documents/GitHub/fall2017-project4-fall2017-proj4-grp8/doc")# if you are using mac version github desktop, if not please set wd to the place where this file located
+# Step 0: Load the packages, specify directories
+
+```{r, eval=FALSE}
+#Here is web training and testing data set
+web_train <- "../data/MS_sample/data_train"
+web_test <- "../data/MS_sample/data_test"
+
+#Here is movie training and testing data set
+movie_train <- "../data/eachmovie_sample/data_train"
+movie_test <- "../data/eachmovie_sample/data_test"
 ```
 
-## Step 1: Load, process and clean the data
-
-```{r}
-load("../output/movietrain_significance_weighting_n=9.Rdata")
-load("../output/movietrain_significance_weighting_n=10.Rdata")
-load("../output/movietrain_significance_weighting_n=11.Rdata")
-load("../output/movietrain_significance_weighting_n=12.Rdata")
-load("../output/movietrain_significance_weighting_n=14.Rdata")
-load("../output/movietrain_significance_weighting_n=16.Rdata")
-load("../output/webtrain_significance_weighting_n=5.Rdata")
-load("../output/webtrain_significance_weighting_n=8.Rdata")
-load("../output/webtrain_significance_weighting_n=9.Rdata")
-load("../output/webtrain_significance_weighting_n=10.Rdata")
+# Step 1: Load, process and clean the data
 
-load("../output/web.sp.sim.Rdata")
-load("../output/web.entropy.sim.Rdata")
-load("../output/web.msd.sim.Rdata")
+By processing data, each row of movie data set represents each active user's scores on all movies, each column gives users' scores on each movie. For web data set, the first column tells us the No. of each user, while the other columns represent which vroot the users visit. Each row correspends a user.
+```{r, eval=FALSE}
+source("../lib/data.processing.r") # Here is our data processing.
+web_train1 <- "../data/web.train2.0"
+movie_train1 <- "../data/movie.train2.0"
+
+#Processing in similarity2.0.R
+load("../output/web.train.matrix.Rdata")
+load("../output/mv.train.matrix.Rdata")
 ```
 
-## Step 2: Implement memory-based algorithms
+# Step 2: Implement memory-based algorithms
+The main idea of memory-based algorithm is to quantify the similarities between users based on the available data in order to make accurate predictions about the utility or ratings of items that have yet to be evaluated by the users. 
 
-1) Similarity Weight
+To implement each component of the memory-based algorithms we are assigned, we follow the following procedure:
 
-Spearman Correlation
-```{r}
+i. Calculate the weights between each pair of users using the training data set
+ii. Make prediction about the ratings (which could be binary or numerical) of unrated items for all the users in the test data set
+iii. Evaluate the algorithm by comparing the prediction with the test data set using either rank scoring or mean absolute error.
 
+## 1) Similarity Weighting
+
+## Spearman Correlation
+
+Spearman Correlation Coefficient is simmilar to Pearson Correlation Coefficient except that calculation is done with ranks instead of rating values. Some research has shown that Spearman correlation result in similar performance as Pearson.
+```{r, eval=FALSE}
+
+# Spearman coef uses ranking 
+web_train_rank0 <- t(apply(web_train, 1, function(rrr){return(ifelse(rrr==1, 1, 2))}))
+
+# BEGIN Calc weights #
+
+spearmaned_w <- matrix(NA, nrow = nrow(web_train_rank0), ncol = nrow(web_train_rank0))
+
+for( i in 1:nrow(spearmaned_w) ){
+  v_ind <- which(web_train[i,] == 1)
+  
+  for( j in 1:ncol(spearmaned_w)){
+    # var_weighted_w[i,j] <- sum(v_i[v_ind] * web_train_rank0[i, v_ind] * web_train_rank0[j, v_ind]) / sum(v_i[v_ind])
+    spearmaned_w[i,j] <- cor(x=web_train_rank0[i,], y=web_train_rank0[j,], method = "pearson")
+  }
+}
+#spearmaned_w
+dim(spearmaned_w)
+# END Calc weights #
+
+# BEING Prediction #
+spearman_p <- memory_based_prediction(train_data = web_train_mini, w = spearman_p)
+final_spearman_p <- apply(spearman_p, 2, rank, ties.method="min")
+# END Prediction # 
 ```
 
-Entropy
-```{r}
+## Entropy
+```{r, eval=FALSE}
+getEntropy <- function(x,y) {
+  library(entropy)
+  x[x==0]<-0.000001
+  y[y==0]<-0.000001
+  etp <- KL.empirical(x,y)
+  return(etp)
+}
 
+load("../output/web.etp.sim.Rdata")
+load("../output/mv.etp.sim.Rdata")
 ```
 
-Mean-square-difference
-```{r}
+## Mean-square-difference
+```{r, eval=FALSE}
+getMSD <- function(x,y) {
+  msd <- mean((x-y)^2)
+  return(msd)
+}
 
+load("../output/web.msdiff.sim.Rdata")
+load("../output/mv.msdiff.sim.Rdata")
 ```
 
-SimRank
-```{r}
-
+## SimRank
+```{r, eval=FALSE}
+# Used Python to get web.simrank.matrix, unfortunately, the file is too large to upload online.
 ```
 
-####Significance Weighting
-#####read data
-######MSweb data
-```{r,eval=FALSE}
-#######title: "Significance Weighting"
-#######author: "Sijian Xuan"
-#######date: "November 24, 2017"
-#######output: html_document
+## Significance Weighting
+```{r, eval=FALSE}
+# read data
 webtrain_a = read.csv("../output/webtrain_a.csv", header = FALSE)
 webtrain_a = unlist(webtrain_a)
-sqrt(length(webtrain_a)) # = 4151
-```
-######Movie data
-```{r,eval=FALSE}
 movietrain_a = read.csv("../output/movie_train_a.csv", header = FALSE)
 movietrain_a = unlist(movietrain_a)
 movie_train_a = matrix(0, 5055,5055)
 movie_train_a[upper.tri(movie_train_a, diag=FALSE)] = unlist(movietrain_a)
 movie_train_a = t(movie_train_a)
 movie_train_a[upper.tri(movie_train_a, diag=FALSE)] = unlist(movietrain_a)
-# diagonal is 0
-```
-######Note: the values in the webtrain_a and in movietrain_a are number of co-reated items pairwise.
-```{r,eval=FALSE}
-print(mean(webtrain_a))
-print(sd(webtrain_a))
-print(mean(movie_train_a))
-print(sd(movie_train_a))
-```
-######choose the number of co-rated items
-######Web dataset
-######It is reasonable that we choose 5, 8, 9 and 10 as the number of co-rated items.
-#######n = 5
-```{r,eval=FALSE}
-webtrain_a_n_5 = webtrain_a
-n = 5
-for (i in 1:length(webtrain_a)){
-  if (webtrain_a[i] >= n){
-    webtrain_a_n_5[i] = 1
-  }
-  else{
-    webtrain_a_n_5[i] = webtrain_a_n_5[i]/5
-  }
-}
-
-webtrain_a_matrix_5 = as.numeric(webtrain_a_n_5)
-webtrain_a_matrix_5 = matrix(webtrain_a_matrix_5, nrow = 4151, ncol = 4151)
-diag(webtrain_a_matrix_5) = 0
-save(webtrain_a_matrix_5,file = "../output/webtrain_significance_weighting_n=5.Rdata")
-```
-#######n=8
-```{r,eval=FALSE}
-webtrain_a_n_8 = webtrain_a
-n = 8
-for (i in 1:length(webtrain_a)){
-  if (webtrain_a[i] >= n){
-    webtrain_a_n_8[i] = 1
-  }
-  else{
-    webtrain_a_n_8[i] = webtrain_a_n_5[i]/8
-  }
-}
-
-webtrain_a_matrix_8 = as.numeric(webtrain_a_n_8)
-webtrain_a_matrix_8 = matrix(webtrain_a_matrix_8, nrow = 4151, ncol = 4151)
-diag(webtrain_a_matrix_8) = 0
-save(webtrain_a_matrix_8,file = "../output/webtrain_significance_weighting_n=8.Rdata")
-```
-#######n=9
-```{r,eval=FALSE}
+# calculate significance weighting
 webtrain_a_n_9 = webtrain_a
 n = 9
 for (i in 1:length(webtrain_a)){
@@ -142,71 +133,7 @@ webtrain_a_matrix_9 = as.numeric(webtrain_a_n_9)
 webtrain_a_matrix_9 = matrix(webtrain_a_matrix_9, nrow = 4151, ncol = 4151)
 diag(webtrain_a_matrix_9) = 0
 save(webtrain_a_matrix_9,file = "../output/webtrain_significance_weighting_n=9.Rdata")
-```
-#######n=10
-```{r,eval=FALSE}
-webtrain_a_n_10 = webtrain_a
-n = 10
-for (i in 1:length(webtrain_a)){
-  if (webtrain_a[i] >= n){
-    webtrain_a_n_10[i] = 1
-  }
-  else{
-    webtrain_a_n_10[i] = webtrain_a_n_10[i]/10
-  }
-}
 
-webtrain_a_matrix_10 = as.numeric(webtrain_a_n_10)
-webtrain_a_matrix_10 = matrix(webtrain_a_matrix_10, nrow = 4151, ncol = 4151)
-diag(webtrain_a_matrix_10) = 0
-save(webtrain_a_matrix_10,file = "../output/webtrain_significance_weighting_n=10.Rdata")
-```
-#######The propotions of values that are not 1
-```{r,eval=FALSE}
-i=17230801
-a1 = (i - sum(webtrain_a_n_5 == 1))/i
-a2 = (i - sum(webtrain_a_n_8 == 1))/i
-a3 = (i - sum(webtrain_a_n_9 == 1))/i
-a4 = (i - sum(webtrain_a_n_10 == 1))/i
-```
-######Movie dataset
-#######We choose 9, 10, 11 and 12 as the number of co-rated items
-#######n = 9
-```{r,eval=FALSE}
-movie_train_a_9 = movie_train_a
-n = 9
-for(x in 1:dim(movie_train_a)[1]){
-  for(y in 1:dim(movie_train_a)[1]){
-    if(movie_train_a_9[x,y] >= n){
-      movie_train_a_9[x,y] = 1
-    }
-    else{
-      movie_train_a_9[x,y] = movie_train_a_9[x,y]/n
-    }
-  }
-}
-
-save(movie_train_a_9,file = "../output/movietrain_significance_weighting_n=9.Rdata")
-```
-#######n = 10
-```{r,eval=FALSE}
-movie_train_a_10 = movie_train_a
-n = 10
-for(x in 1:dim(movie_train_a)[1]){
-  for(y in 1:dim(movie_train_a)[1]){
-    if(movie_train_a_10[x,y] >= n){
-      movie_train_a_10[x,y] = 1
-    }
-    else{
-      movie_train_a_10[x,y] = movie_train_a_10[x,y]/n
-    }
-  }
-}
-
-save(movie_train_a_10,file = "../output/movietrain_significance_weighting_n=10.Rdata")
-```
-### n = 11
-```{r,eval=FALSE}
 movie_train_a_11 = movie_train_a
 n = 11
 for(x in 1:dim(movie_train_a)[1]){
@@ -222,83 +149,45 @@ for(x in 1:dim(movie_train_a)[1]){
 
 save(movie_train_a_11,file = "../output/movietrain_significance_weighting_n=11.Rdata")
 ```
-#######n = 12
-```{r,eval=FALSE}
-movie_train_a_12 = movie_train_a
-n = 12
-for(x in 1:dim(movie_train_a)[1]){
-  for(y in 1:dim(movie_train_a)[1]){
-    if(movie_train_a_12[x,y] >= n){
-      movie_train_a_12[x,y] = 1
-    }
-    else{
-      movie_train_a_12[x,y] = movie_train_a_12[x,y]/n
-    }
+
+## Variance Weighting
+
+The idea behind this variant is that items with higher ratings variance provides more information about user similarity, therefore should be given more weights and vise versa. According to some literature, incorporating a variance weight term does not significantly improvethe accuracy of the prediction algorithm. 
+```{r, eval=FALSE}
+var_i <- apply(web_train_rank0, 2, var) 
+v_i <- (var_i - min(var_i)) / max(var_i)
+
+# BEGIN Calc weights #
+
+var_weighted_w <- matrix(NA, nrow = nrow(web_train_rank0), ncol = nrow(web_train_rank0))
+
+for( i in 1:nrow(var_weighted_w) ){
+  v_ind <- which(web_train[i,] == 1)
+  
+  for( j in 1:ncol(var_weighted_w)){
+    var_weighted_w[i,j] <- sum(v_i[v_ind] * web_train_rank0[i, v_ind] * web_train_rank0[j, v_ind]) / sum(v_i[v_ind])
+    #var_weighted_w[i,j] <- cor(x=web_train_rank0[i,], y=web_train_rank0[j,], method = "pearson")
   }
 }
 
-save(movie_train_a_12,file = "../output/movietrain_significance_weighting_n=12.Rdata")
-```
-#######n = 14
-```{r,eval=FALSE}
-movie_train_a_14 = movie_train_a
-n = 14
-for(x in 1:dim(movie_train_a)[1]){
-  for(y in 1:dim(movie_train_a)[1]){
-    if(movie_train_a_14[x,y] >= n){
-      movie_train_a_14[x,y] = 1
-    }
-    else{
-      movie_train_a_14[x,y] = movie_train_a_14[x,y]/n
-    }
-  }
-}
+# END Calc weights #
 
-save(movie_train_a_14,file = "../output/movietrain_significance_weighting_n=14.Rdata")
+# BEING Prediction #
+var_weight_p <- memory_based_prediction(train_data = web_train_mini, w = var_weighted_w)
+final_var_weight_p <- apply(var_weight_p, 2, rank, ties.method="min")
+# END Prediction  # 
 ```
-### n = 16
-```{r,eval=FALSE}
-movie_train_a_16 = movie_train_a
-n = 16
-for(x in 1:dim(movie_train_a)[1]){
-  for(y in 1:dim(movie_train_a)[1]){
-    if(movie_train_a_16[x,y] >= n){
-      movie_train_a_16[x,y] = 1
-    }
-    else{
-      movie_train_a_16[x,y] = movie_train_a_16[x,y]/n
-    }
-  }
-}
 
-save(movie_train_a_16,file = "../output/movietrain_significance_weighting_n=16.Rdata")
-```
-#######The propotions of values that are not 1
-```{r,eval=FALSE}
-i=25553025
-a1 = (i - sum(movie_train_a_9 == 1))/i
-a2 = (i - sum(movie_train_a_10 == 1))/i
-a3 = (i - sum(movie_train_a_11 == 1))/i
-a4 = (i - sum(movie_train_a_12 == 1))/i
-a5 = (i - sum(movie_train_a_14 == 1))/i
-a6 = (i - sum(movie_train_a_16 == 1))/i
-``````
-
-Variance Weighting
+## Selecting Neighbors
+```{r, eval=FALSE}
 ```{r}
-
-```
-
-Combined Selecting Neighbors
-```{r}
-###Read data and set weight, threshold
-
 load("../output/web.sp.sim.Rdata")
 load("../output/web.etp.sim.Rdata")
 load("../output/web.msdiff.sim.Rdata")
 load("../output/mv.sp.sim.Rdata")
 load("../output/mv.etp.sim.Rdata")
 load("../output/mv.msdiff.sim.Rdata")
+
 data1 = web.sp.sim
 diag(data1) = 0
 data2 = web.entropy.sim
@@ -311,17 +200,7 @@ data5 = mv.etp.sim
 diag(data5) = 0
 data6 = mv.msdiff.sim
 diag(data6) = 0
-# dimension of 3 dataset are all 4151 dimension square matrices.
-```
-```{r}
-hist(data1,30)
-hist(data2,30)
-hist(data3,30)
-hist(data4,30)
-hist(data5,30)
-hist(data6,30)
-```
-```{r}
+
 threshold1 = 0.6
 threshold2 = 8
 threshold3 = 0.6
@@ -329,18 +208,16 @@ threshold4 = 0.3
 threshold5 = 0.6
 threshold6 = 0.7
 n = 20 
-```
+
 ### Standard: larger than threshold and max number of estimator is n.
-```{r}
+
 aaa<- function(x,threshold){
   a1<- x[order(-x)][1:n]*(x[order(-x)][1:n]>=threshold)
   a1[a1==0]<- NA
   res<- which(x %in% a1)[1:n]
   return(res)
 }
-```
-####web dataset, spearman
-```{r}
+
 data = data1
 threshold = threshold1
 result = t(apply(data, 1, function(x) aaa(x,threshold)))
@@ -354,9 +231,7 @@ for(x in 1:4151){
   }
 }
 save(value_matrix, file = "../output/sn_web_sp_n=20_th=0.6.Rdata")
-```
-####web dataset, entropy
-```{r}
+
 data = data2
 threshold = threshold2
 result = t(apply(data, 1, function(x) aaa(x,threshold)))
@@ -370,9 +245,7 @@ for(x in 1:4151){
   }
 }
 save(value_matrix, file = "../output/sn_web_entropy_n=20_th=8.Rdata")
-```
-###web dataset, msd
-```{r}
+
 data = data3
 threshold = threshold3
 result = t(apply(data, 1, function(x) aaa(x,threshold)))
@@ -386,9 +259,7 @@ for(x in 1:4151){
   }
 }
 save(value_matrix, file = "../output/sn_web_msd_n=20_th=0.6.Rdata")
-```
-###movie dataset, sp
-```{r}
+
 data = data4
 threshold = threshold4
 result = t(apply(data, 1, function(x) aaa(x,threshold)))
@@ -402,9 +273,7 @@ for(x in 1:5055){
   }
 }
 save(value_matrix, file = "../output/sn_movie_sp_n=20_th=0.3.Rdata")
-```
-###movie dataset, etp
-```{r}
+
 data = data5
 threshold = threshold5
 result = t(apply(data, 1, function(x) aaa(x,threshold)))
@@ -417,10 +286,8 @@ for(x in 1:5055){
     }
   }
 }
-save(value_matrix, file = "../output/sn_movie_sp_n=20_th=0.6.Rdata")
-```
-###movie dataset, msd
-```{r}
+save(value_matrix, file = "../output/sn_movie_etp_n=20_th=0.6.Rdata")
+
 data = data6
 threshold = threshold6
 result = t(apply(data, 1, function(x) aaa(x,threshold)))
@@ -433,43 +300,143 @@ for(x in 1:5055){
     }
   }
 }
-save(value_matrix, file = "../output/sn_movie_sp_n=20_th=0.7.Rdata")
+save(value_matrix, file = "../output/sn_movie_msd_n=20_th=0.7.Rdata")
+```
 ```
 
-Rating Normalization
+## Rating Normalization
 
 Once the neighborhood has been selected, the ratings from those neighbors are combined to compute a prediction, after possibly scaling the ratings to a common distribution. An extension to the GroupLens algorithm is to account for the differences in spread between users' rating distributions by converting ratings to z-scores. And computing a weighted average of the z-scores as following.
-```{r}
-
+```{r, eval=FALSE}
+rate_norm<-function(data){
+return(t(apply(data[,-1],1,scale)))
+}
 ```
 
 Obviously, we can get predictions in this step. In next step, we will compare the actual value in test data to prediction. 
-## Step 3: Implement model-based algorithms
 
-```{r}
+# Step 3: Implement model-based algorithms
+
+We implement cluster model to make predictions about ratings. In the model-based algorithm, the ratings each user gives to a specific item is a random variable.  We use Bayesian Mixture to model this random variable by incorporating the information from the available ratings. We assume that each user belongs to a cluster c, where the number of clusters is determined by cross validation. 
+
+EM-algorithm is used to iteratively update the "soft assignment" - the probability that each user belongs to a specific cluster, and the parameters - the relative cluster size and the probability that user i gives item j a rating of k given that user i belongs to cluster c.
+
+```{r, eval=FALSE}
 
 ```
 
-## Step 4: Evaluation
+# Step 4: Prediction
+Web
+```{r, eval=FALSE}
+memory_based_prediction <- function(train_data, w){
+  
+  std_r <- t(apply(train_data, 1, function(rrr){
+    return( (rrr-mean(rrr)) / sd(rrr)) }))
+  
+  p <- matrix(NA, nrow = nrow(train_data), ncol = ncol(train_data))
+  
+  for (a in 1:nrow(p)){
+    for(i in 1:ncol(p)){
+      
+      p[a,i] <- mean(train_data[a, ]) + sd(train_data[a,]) * sum(std_r[,i] * w[a,]) / sum(w[a,])
+    }
+  }
+  return(p)
+}
+
+predict.nei<-function(data,sim,nei){
+  #sim<-abs(sim)
+  p<- matrix(NA, nrow = nrow(data), ncol = ncol(data)-1)
+
+  for (a in 1:nrow(data)){
+    
+    sim.sub<-sim[a,nei[a,]] #20
+    nei.sub<-data[nei[a, ],-1] #20*85
+    
+    for(i in 1:ncol(data)-1){
+      nei.norm <- (nei.sub[ ,i]-apply(nei.sub, 1, mean))/apply(nei.sub, 1, sd) #20
+      p[a,i] <- mean(data[a,-1]) + sd(data[a,-1]) * sum(nei.norm * sim.sub) / sum(sim.sub)
+    }
+    
+    print(a)
+  }
+  return(p)
+}
+
+```
+
+Movie
+```{r, eval=FALSE}
+predict.mv.general<-function(data,test,sim){
+  #sim<-abs(sim)
+  data[is.na(data)]<-0
+  train.movie<-colnames(data[,-1])
+  
+  p<- matrix(NA, nrow = nrow(test), ncol = ncol(test)-1)
+  norm<-t(apply(data[,-1],1,scale))
+  
+  for (a in 1:nrow(test)){
+      test.sub<-test[a,-1]
+      isna<-which(!is.na(test.sub))
+      #colref<-colnames(test.sub[isna])
+      #idx<-match(colref,colnames(data))
+      
+    #for(i in idx){ 
+    for(i in isna){
+      ref<-match(colnames(test.sub)[i],train.movie)
+      p[a,i] <- mean(as.numeric(data[a,-1])) + sd(as.numeric(data[a,-1])) * sum(norm[,ref]* sim[a,]) / sum(sim[a,])
+      
+    }
+    print(a)
+  }
+  return(p)
+}
+
+
+predict.mv.nei<-function(data,test,sim,nei){
+  #sim<-abs(sim)
+  data[is.na(data)]<-0
+  train.movie<-colnames(data[,-1])
+  
+  p<- matrix(NA, nrow = nrow(test), ncol = ncol(test)-1)
+  norm<-t(apply(data[,-1],1,scale))
+  
+  for (a in 1:nrow(test)){
+    test.sub<-test[a,-1]
+    isna<-which(!is.na(test.sub))
+    
+    sim.sub<-sim[a,nei[a,]] #simlimarity subset of neighborrs
+    nei.sub<-data[nei[a, ],-1] #data subset of neighborrs
+    
+    #for(i in idx){ 
+    for(i in isna){
+      ref<-match(colnames(test.sub)[i],train.movie)#index of test data in train data
+      nei.norm <- (nei.sub[ ,ref]-apply(nei.sub, 1, mean))/apply(nei.sub, 1, sd) #20
+      p[a,i] <- mean(as.numeric(data[a,-1])) + sd(as.numeric(data[a,-1])) * sum(nei.norm * sim) / sum(sim)
+      
+    }
+    print(a)
+  }
+  return(p)
+}
+```
+
+# Step 5: Evaluation
 
 Ranked scoring for the first data set.
-```{r}
+```{r, eval=FALSE}
 
 ```
 
-Mean absolute error(MAE) for the second data set.
+## Mean absolute error(MAE) for the second data set.
 
 Mean absolute error is the average of absolute value of the difference between the prediction and actual value from test data set. The calculation results are as follows.
-```{r}
-
+```{r, eval=FALSE}
+load("../output/submv_result.Rdata")
 ```
 
-we can easily find that the algorithm which possesses the lowest MAE is the most efficient collaborative filtering algorithm. Here, the best one is     .
+We can easily find that the algorithm which possesses the lowest MAE is the most efficient collaborative filtering algorithm. Here, the best one is     .
 
-ROC sensitivity for the second data set.
-```{r}
+# Conclusion
 
-```
-
-## Conclusion
-
+All in all, Spearman Correlation without significance weight and variance weighting is the best algorithm when neighbors are not greater than 20, threshold is equal to 0.3. It has the lowest MAE among all memory-based algorithm, which is 2.278. Web data has the highest ranked score 328.98 when is conducted mean-squared-difference without significance and variance weighting. As for model-based algorithm, (algorithm) behaved better performance with ranked score (number). So...
