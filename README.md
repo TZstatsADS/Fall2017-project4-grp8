@@ -20,7 +20,7 @@ In this project, we implemented collaborative filtering to make automatic predic
 ![image](figs/framework.png)
 
 + Result:
-
+Spearman Correlation without significance weight and variance weighting is the best algorithm when neighbors are not greater than 20, threshold is equal to 0.3. It has the lowest MAE among all memory-based algorithm, which is 2.278. Web data has the highest ranked score 328.98 when is conducted mean-squared-difference without significance and variance weighting. As for model-based algorithm, (algorithm) behaved better performance with ranked score (number). So...
 	
 **Contribution statement**: ([default](doc/a_note_on_contributions.md)) All team members contributed equally in all stages of this project. All team members approve our work presented in this GitHub repository including this contributions statement. 
 
