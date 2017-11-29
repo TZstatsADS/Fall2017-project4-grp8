@@ -5,7 +5,18 @@ library(entropy)
 web.train<-read.csv("../data/web.train2.0.csv")
 movie.train<-read.csv("../data/movie.train2.0.csv")
 
-dataprocess<-function(data){
+
+web.user<-web.train[,1]
+web.feature<-unique(unlist(web.train[,-1]))
+web.feature<-feature[!is.na(feature)]
+length(web.feature)
+
+
+movie.user<-movie.train[,1]
+movie.feature<-colnames(movie.train[,-1])
+
+dataprocess<-function(data,feature=web.feature){
+
   data<-data[,-1]
   
   #movie
@@ -15,8 +26,8 @@ dataprocess<-function(data){
     
   }else{
     #web
-    feature<-unique(unlist(data))
-    feature<-feature[!is.na(feature)]
+    #feature<-unique(unlist(data))
+    #feature<-feature[!is.na(feature)]
     
     matrix<-matrix(0,nrow=nrow(data),ncol=length(feature))
     colnames(matrix)<-feature
@@ -34,6 +45,42 @@ dataprocess<-function(data){
 web.train.matrix<-dataprocess(web.train)
 movie.train.matrix<-dataprocess(movie.train)
 
+web.train.matrix<-cbind(web.user,web.train.matrix)
+dim(web.train.matrix)
+save(web.train.matrix,file="~/Desktop/Proj4/web.train.matrix.Rdata")
+mv.train.matrix<-movie.train
+dim(mv.train.matrix)
+save(mv.train.matrix,file="~/Desktop/Proj4/mv.train.matrix.Rdata")
+
+#####
+
+web.test<-read.csv("~/Desktop/Proj4/web.test2.0.csv")
+movie.test<-read.csv("~/Desktop/Proj4/movie.test2.0.csv")
+
+web.test.matrix<-dataprocess(web.test)
+web.test.user<-web.test[,1]
+web.test.matrix<-cbind(web.test.user,web.test.matrix)
+save(web.test.matrix,file="~/Desktop/Proj4/web.test.matrix.Rdata")
+
+mv.test.matrix<-movie.test[,-1]
+save(mv.test.matrix,file="~/Desktop/Proj4/mv.test.matrix.Rdata")
+
+
+idx<-match(web.test.user,web.user)
+
+#MOVIE
+MAE<-function(pred,test){
+   #idx<-match(colnames(movie.test.matrix),colnames(movie.train.matrix))
+  test<-test[,-1]
+  #pred<-pred[,-1]
+  test[test==0]<-NA
+  #idx<-match(colnames(test),colnames(mv.train.matrix[,-1]))
+  colnames(pred)<-colnames(mv.train.matrix[,-1])
+  idx<-match(colnames(test),colnames(pred))
+  mae<-mean(abs(test-pred[,idx]),na.rm=T)
+  return(mae)
+}
+MAE(mv.msd.p,mv.test.matrix)
 ######################function###############
 getSpearman <- function(x,y) 
 {
@@ -90,7 +137,7 @@ save(web.sp.sim,file="~/Desktop/Proj4/web.sp.sim.Rdata")
 
 web.entropy.sim<-makesymmetric(web.entropy.similarity)
 web.etp.sim<-1-(web.entropy.sim/max(web.entropy.sim))
-save(web.entropy.sim,file="~/Desktop/Proj4/web.etp.sim.Rdata")
+save(web.etp.sim,file="~/Desktop/Proj4/web.etp.sim.Rdata")
 
 web.msd.sim<-makesymmetric(web.msd.similarity)
 web.msdiff.sim<-1-(web.msd.sim/max(web.msd.sim))
