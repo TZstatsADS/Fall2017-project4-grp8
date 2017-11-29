@@ -104,6 +104,10 @@ load("../output/mv.msdiff.sim.Rdata")
 ## SimRank
 ```{r, eval=FALSE}
 # Used Python to get web.simrank.matrix, unfortunately, the file is too large to upload online.
+# For codes and files that could upload to github, we upload those to Fall2017-project4-grp/lib/simrank folder. 
+# We first preporcessed original data into graph relationship format in R and saved as relationship_total_update.txt
+# Then, we used Python to calculate Simrank. The detail code is in imrank-2.ipynb and saved the result as txt file. However, the txt file is too large to upload to github.
+# To keep in same web id and user id as other similarty scores,we also processed the Simrank result in python,SimRank_Visitor_Result_Processing.ipynb. The result is still too large to upload to github.
 ```
 
 ## Significance Weighting
@@ -317,6 +321,8 @@ return(t(apply(data[,-1],1,scale)))
 We implement cluster model to make predictions about ratings. In the model-based algorithm, the ratings each user gives to a specific item is a random variable.  We use Bayesian Mixture to model this random variable by incorporating the information from the available ratings. We assume that each user belongs to a cluster c, where the number of clusters is determined by cross validation. 
 
 EM-algorithm is used to iteratively update the "soft assignment" - the probability that each user belongs to a specific cluster, and the parameters - the relative cluster size and the probability that user i gives item j a rating of k given that user i belongs to cluster c.
+
+Here is the EM-algorithm part:
 
 ```{r, eval=FALSE}
 #-------------------------------- Expectation  -----------------------------
