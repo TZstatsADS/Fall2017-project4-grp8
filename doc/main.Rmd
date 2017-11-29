@@ -536,6 +536,38 @@ predict.mv.nei<-function(data,test,sim,nei){
   }
   return(p)
 }
+
+# Prediction for Cluster Model
+cluster_predict <- function(mu, gamma, data_set, C){  # C is c(1:9); mu is a vector; gamma is a 3-dimensional array
+
+  visited_j <- apply(data_set, 1, function(rrr){return(which(rrr!=0))})
+  numerator_c <- rep(NA, length(C))
+  denominator_c <- rep(NA, length(C))
+      
+  predict_matrix <- matrix(NA, nrow = nrow(data_set), ncol = ncol(data_set))
+  pre_predict <- rep(NA, ncol(predict_matrix))
+  
+  for(n in c(1:nrow(predict_matrix)) ){
+    
+    for(m in c(1:ncol(predict_matrix))){
+      for (k in c(1:6)){
+        for (c in c(1:length(C))){
+
+          numerator_c[c] <- mu[c] * gamma[c(6*(c-1)+k), m] * prod(gamma[c(6*(c-1)+c(1:6)), visited_j[[n]] ] ) 
+          
+          denominator_c[c] <- mu[c] * prod(gamma[c(6*(c-1)+c(1:6)), visited_j[[n]] ] ) 
+        }
+        
+      pre_predict[m] <- sum(numerator_c) / sum(denominator_c) * k
+      }
+      predict_matrix[n,m] <-  sum(pre_predict)
+    }
+    
+  }
+  
+  return(predict_matrix)
+  
+}
 ```
 
 Obviously, we can get predictions in this step. In next step, we will compare the actual value in test data to prediction.
