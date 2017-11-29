@@ -1,8 +1,8 @@
 #-------------------------------- Expectation  -----------------------------
 expectation <- function(mu,gamma,matrixk,c){
   theta<-NULL
+  N<-nrow(matrixk)
   for (i in 1:c){
-    N<-nrow(matrixk)
     gamma_c<-gamma[((c-1)*6+1):(6*c),]
     gamma_c<-as.vector(t(gamma_c))
     gamma_c<-matrix(rep(gamma_c,each=N),nrow=N)
@@ -11,37 +11,14 @@ expectation <- function(mu,gamma,matrixk,c){
     names(theta_i)<-NULL
     theta<-rbind(theta,theta_i)
   }
-  mu_diag<-diag(mu,c,c)
-  upper<-mu_diag%*%theta
+  mu_repeat<-matrix(rep(mu,each=N),nrow=N)
+  upper<-t(mu_repeat)*theta
   sum<-colSums(upper, na.rm=TRUE)
   lower<-matrix(rep(sum,each=c),nrow=c)
   pi<-upper/lower
   pi[is.na(pi)]<-10^(-100)
   return(pi)
 }###end of expectation
-
-######test # expectation <- function(mu,gamma,matrixk,c){
-#   theta<-NULL
-#   for (i in 1:c){
-#     N<-nrow(matrixk)
-#     gamma_c<-gamma[((c-1)*6+1):(6*c),]
-#     gamma_c<-as.vector(t(gamma_c))
-#     gamma_c<-matrix(rep(gamma_c,each=N),nrow=N)
-#     Di<-matrixk*gamma_c
-#     theta_i<-apply(Di,1,function(x){return(prod(x[x>0]))})
-#     names(theta_i)<-NULL
-#     theta<-rbind(theta,theta_i)
-#   }
-#   mu_diag<-diag(mu,c,c)
-#   upper<-mu_diag%*%theta
-#   sum<-colSums(upper, na.rm=TRUE)
-#   lower<-matrix(rep(sum,each=c),nrow=c)
-#   pi<-upper/lower
-#   return(pi)
-# }###end of expectation
-
-
-
 
 #-------------------------------- Maximization   --------------------------------
 maximization <- function(pi,matrixk,c){
@@ -55,8 +32,8 @@ maximization <- function(pi,matrixk,c){
   gamma_temp<-NULL
   for (k in 1:6){
     data<-as.matrix(matrixk)
-    data[data != 1]<-0
-    data[data == 1]<-1 
+    data[data != k]<-0
+    data[data == k]<-1 
     upper<-pi%*%data
     gamma_k<-upper/t(lower)
     gamma_k<-as.vector(t(gamma_k))
@@ -73,32 +50,7 @@ maximization <- function(pi,matrixk,c){
   return(re)
 }
 
-# maximization <- function(pi,matrixk,c){
-#   N<-nrow(matrixk)
-#   # estimate mu
-#   mu <- rowSums(pi)/ncol(pi)
-#   
-#   # estimate gamma
-#   summation<-rowSums(pi)
-#   lower<-matrix(rep(summation,each=N),nrow=N)
-#   gamma_temp<-NULL
-#   for (k in 1:6){
-#     data<-as.matrix(matrixk)
-#     data[data != k]<-0
-#     data[data == k]<-1 
-#     upper<-pi%*%data
-#     gamma_k<-upper/t(lower)
-#     gamma_k<-as.vector(t(gamma_k))
-#     gamma_temp<-rbind(gamma_temp,gamma_k)
-#   }### end of gamma calculation for each k 
-#   gamma<-NULL
-#   for (i in 1:c){
-#     temp<-gamma_temp[,((i-1)*M+1):(i*M)]
-#     gamma<-rbind(gamma,temp)
-#   }
-#   re<-list(mu,gamma)  
-#   return(re)
-# }
+
 #---------------------------- Expectation Maximization Algorithm  -------------------------
 
 EM <- function(data,matrixk,mu_inits,gamma_inits,c,maxit=100,tol=1e-5)
@@ -127,19 +79,6 @@ EM <- function(data,matrixk,mu_inits,gamma_inits,c,maxit=100,tol=1e-5)
   return(em)
 }
 
-
-# # #########test !!!!
-# # flag <- 0
-# # mu_cur <- mu_inits; gamma_cur <- gamma_inits
-# # cur <- c(mu_cur,gamma_cur)
-# # new <- maximization(expectation(mu_cur,gamma_cur,data,c),data_train,c)
-# # mu_new <- new[[1]]; gamma_new <- new[[2]]
-# # new_step <- c(mu_new,gamma_new)
-# # all(abs(cur - new_step) < 1e-5)
-# # if( all(abs(cur - new_step) < 1e-5) ){ flag <- 1; break}
-# # 
-# # 
-# 
 #------------------ train data --------------------------------
 
 data_train <- read.csv("~/Downloads/data_sample/eachmovie_sample/moive_train.csv")
@@ -163,12 +102,11 @@ data<-data[,-1]
 # Set parameter estimates
 c<-9
 
-###mu
-# mu_inits<-rep(1/c,c)
+#mu
 rand_mu<-runif(c, min=0,max=1)
 mu_inits<-rand_mu/sum(rand_mu)
 
-###gamma
+#gamma
 rand<-runif(c*6*ncol(data_train),min=0,max=1)
 ar <- array(rand, dim=c(c,  ncol(data_train),6))
 arr<-matrix(rep(NA,ncol(data_train)),ncol=ncol(data_train),nrow=1)
@@ -179,5 +117,5 @@ for (i in 1:c){
 gamma_inits<-arr[-1,]
 
 #--------------------Return EM Algorithm function -----------------------------
-options(digits = 22)
 output <- EM(data,data_train,mu_inits,gamma_inits,c)
+
