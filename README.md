@@ -15,7 +15,7 @@ Term: Fall 2017
 	+ Yiran Li
 	
 + Project summary: 
-Implement Collaborative Filtering with different settings.
+In this project, we implemented collaborative filtering to make automatic predictions (filtering) about the interests of a user by collecting preferences or taste information from many users (collaborating). We also evaluated and compared a pair of algorithms for collaborative filtering. Firstly, spearman correlation, entropy, mean-squared-difference and simrank were used to get the similarity matrix, at the same time, we added significance weighting or variance weighting to similarity. Secondly, neighbors were selected by combining weighting threshold and best-n-estimator. Once the neighborhood has been selected, the ratings from those neighbors are combined to compute a prediction, after possibly scaling the ratings to a common distribution. Besides, we also tried cluster models to conduct the similar process. For evaluation part, we used ranked scoring for the first data set, while mean absolute error(MAE) was used for the movie data set.
 
 ![image](figs/framework.png)
 
