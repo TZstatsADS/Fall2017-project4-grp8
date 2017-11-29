@@ -8,7 +8,7 @@ We applied different variants of similarity weighting, which include Spearman, E
 
 + Chenyun Wu
 
-+ Sihui Shao: Created the Expectation and Maximization function and Implemented the EM algorithm on EachMovie data for the Cluster Model; created functions in Python to implement SimRank on EachMovie data
++ Sihui Shao: Created the Expectation and the Maximization function, expected rating prediction function and implemented the EM algorithm on EachMovie data for the Cluster Model; created functions in Python to implement SimRank on EachMovie data.
 
 + Sijian Xuan
 
