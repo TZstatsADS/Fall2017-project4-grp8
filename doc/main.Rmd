@@ -537,7 +537,8 @@ predict.mv.general<-function(data,test,sim){
   train.movie<-colnames(data[,-1])
   
   p<- matrix(NA, nrow = nrow(test), ncol = ncol(test)-1)
-  norm<-t(apply(data[,-1],1,scale))
+  #norm<-t(apply(data[,-1],1,scale))
+  norm<-abs(t(apply(data[,-1],1,scale)))
   
   for (a in 1:nrow(test)){
       test.sub<-test[a,-1]
@@ -632,7 +633,7 @@ source("../lib/function+for+making+prediction.R")
 Mean absolute error is the average of absolute value of the difference between the prediction and actual value from test data set. The calculation results are as follows.
 ```{r, eval=FALSE}
 #predictions are done by many group members, can seen in "./lib/predict.R" 
-load("../output/submv_result.Rdata")
+load("../output/mv_result.Rdata")
 ```
 
 We can easily find that the algorithm which possesses the lowest MAE is the most efficient collaborative filtering algorithm.
