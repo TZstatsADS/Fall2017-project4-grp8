@@ -606,7 +606,7 @@ Obviously, we can get predictions in this step. In next step, we will compare th
 
 Ranked scoring for the first data set.
 ```{r, eval=FALSE}
-#predictions are done by many group members
+#predictions are done by many group members, can seen in "./lib/
 source("../lib/function+for+making+prediction.R")
 ```
 
@@ -614,7 +614,7 @@ source("../lib/function+for+making+prediction.R")
 
 Mean absolute error is the average of absolute value of the difference between the prediction and actual value from test data set. The calculation results are as follows.
 ```{r, eval=FALSE}
-#predictions are done by many group members, can seen in "./lib.predict.R" 
+#predictions are done by many group members, can seen in "./lib/predict.R" 
 load("../output/submv_result.Rdata")
 ```
 
