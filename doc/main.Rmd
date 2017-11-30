@@ -74,6 +74,23 @@ dim(spearmaned_w)
 spearman_p <- memory_based_prediction(train_data = web_train_mini, w = spearman_p)
 final_spearman_p <- apply(spearman_p, 2, rank, ties.method="min")
 # END Prediction # 
+
+
+
+
+##########
+getSpearman <- function(data) 
+{
+  data[is.na(data)]<-0
+  sp<-cor(t(data), t(data),method="spearman")
+  sp.norm<-(sp-min(sp))/(max(sp)-min(sp))
+  return(sp.norm)
+}
+
+
+load("../output/web.sp.sim.Rdata")
+load("../output/mv.sp.sim.Rdata")
+
 ```
 
 ## Entropy
@@ -312,7 +329,7 @@ save(value_matrix, file = "../output/sn_movie_msd_n=20_th=0.7.Rdata")
 Once the neighborhood has been selected, the ratings from those neighbors are combined to compute a prediction, after possibly scaling the ratings to a common distribution. An extension to the GroupLens algorithm is to account for the differences in spread between users' rating distributions by converting ratings to z-scores. And computing a weighted average of the z-scores as following.
 ```{r, eval=FALSE}
 rate_norm<-function(data){
-return(t(apply(data[,-1],1,scale)))
+return(abs(t(apply(data[,-1],1,scale))))
 }
 ```
 
@@ -480,7 +497,7 @@ memory_based_prediction <- function(train_data, w){
 predict.general<-function(data,sim){
   #sim<-abs(sim)
   p<- matrix(NA, nrow = nrow(data), ncol = ncol(data)-1)
-  norm<-t(apply(data[,-1],1,scale))
+  norm<-abs(t(apply(data[,-1],1,scale)))
   
   for (a in 1:nrow(data)){
     for(i in 1:ncol(data)-1){
