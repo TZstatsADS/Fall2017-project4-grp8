@@ -497,7 +497,7 @@ memory_based_prediction <- function(train_data, w){
 predict.general<-function(data,sim){
   #sim<-abs(sim)
   p<- matrix(NA, nrow = nrow(data), ncol = ncol(data)-1)
-  norm<-abs(t(apply(data[,-1],1,scale)))
+  norm<-t(apply(data[,-1],1,scale))
   
   for (a in 1:nrow(data)){
     for(i in 1:ncol(data)-1){
