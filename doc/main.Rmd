@@ -322,6 +322,12 @@ We implement cluster model to make predictions about ratings. In the model-based
 
 EM-algorithm is used to iteratively update the "soft assignment" - the probability that each user belongs to a specific cluster, and the parameters - the relative cluster size and the probability that user i gives item j a rating of k given that user i belongs to cluster c.
 
+For the all related codes and files are under lib/cluster_model. Here are notes for files: 
+    -cluster_Train_Test_Data_Preprocssing.R: train and test data preporcessing
+    -em.R : EM-algorithm, part of them has included below 
+    -cluster_prediction_MAE.R: prediction and calculation MAE
+    -ClusterModel_Predict_Result.csv: prediction result
+
 Here is the EM-algorithm part:
 
 ```{r, eval=FALSE}
@@ -447,6 +453,8 @@ gamma_inits<-arr[-1,]
 output <- EM(data,data_train,mu_inits,gamma_inits,c)
 
 ```
+
+ 
 
 # Step 4: Prediction
 
