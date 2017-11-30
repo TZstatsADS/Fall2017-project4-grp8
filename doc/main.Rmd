@@ -126,6 +126,8 @@ load("../output/mv.msdiff.sim.Rdata")
 # We first preporcessed original data into graph relationship format in R and saved as relationship_total_update.txt
 # Then, we used Python to calculate Simrank. The detail code is in imrank-2.ipynb and saved the result as txt file. However, the txt file is too large to upload to github.
 # To keep in same web id and user id as other similarty scores,we also processed the Simrank result in python,SimRank_Visitor_Result_Processing.ipynb. The result is still too large to upload to github.
+
+load("../output/web.simrank.matrix.Rdata")
 ```
 
 ## Significance Weighting
@@ -630,6 +632,41 @@ cluster_predict <- function(mu, gamma, data_set, C){  # C is c(1:9); mu is a vec
 }
 ```
 
+```{r, eval=FALSE}
+#######web prediction
+load("../output/web.sp.p.Rdata")
+load("../output/web.etp.p.Rdata")
+load("../output/web.msd.p.Rdata")
+
+load("../output/web.sp.nei.p.Rdata")
+load("../output/web.etp.nei.p.Rdata")
+load("../output/web.msd.nei.p.Rdata")
+
+load("../output/web.sp.sig.p.Rdata")
+load("../output/web.etp.sig.p.Rdata")
+load("../output/web.msd.sig.p.Rdata")
+
+load("../output/web.sp.var.p.Rdata")
+load("../output/web.simrank.p.Rdata")
+
+
+#########movie prediction
+load("../output/mv.sp.p.Rdata")
+load("../output/mv.etp.p.Rdata")
+load("../output/mv.msd.p.Rdata")
+
+load("../output/mv.var.p.Rdata")
+load("../output/mv.sp.sig.p.Rdata")
+load("../output/mv.etp.sig.p.Rdata")
+load("../output/mv.msd.sig.p.Rdata")
+
+load("../output/submv.sp.nei.p.Rdata")
+load("../output/submv.etp.nei.p.Rdata")
+load("../output/submv.msd.nei.p.Rdata")
+
+
+```
+
 Obviously, we can get predictions in this step. In next step, we will compare the actual value in test data to prediction.
 
 # Step 5: Evaluation
@@ -654,4 +691,7 @@ We can easily find that the algorithm which possesses the lowest MAE is the most
 
 # Conclusion
 
-All in all, Spearman Correlation without significance weight and variance weighting is the best algorithm when neighbors are not greater than 20, threshold is equal to 0.3. It has the lowest MAE among all memory-based algorithm, which is 2.278. Web data has the highest ranked score 23.38 when is conducted under significance weighting. As for model-based algorithm, the lowest MAE achieved is 0.0004.
+All in all, 
+Movie data has lowest MAE 2.187 when conducted under Entropy.
+Web data has the highest ranked score 72.09 when conducted under MSD & Neigbors.
+As for model-based algorithm, the lowest MAE achieved for Movie data is 0.0004.
