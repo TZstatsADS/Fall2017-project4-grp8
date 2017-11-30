@@ -515,16 +515,27 @@ predict.nei<-function(data,sim,nei){
 
   for (a in 1:nrow(data)){
     
-    sim.sub<-sim[a,nei[a,]] #20
-    nei.sub<-data[nei[a, ],-1] #20*85
+    nb<-nei[a,]
+    nb<-nb[!is.na(nb)]
     
+    if(length(nb)==0){
+      p[a,]<-rep(mean(data[a,-1]),ncol(data)-1)
+    }
+    
+    else{
+    sim.sub<-sim[a,nb] #20
+    nei.sub<-data[nb,-1] #20*85
+  
     for(i in 1:ncol(data)-1){
       nei.norm <- (nei.sub[ ,i]-apply(nei.sub, 1, mean))/apply(nei.sub, 1, sd) #20
       p[a,i] <- mean(data[a,-1]) + sd(data[a,-1]) * sum(nei.norm * sim.sub) / sum(sim.sub)
     }
     
+    }
+    
     print(a)
   }
+  
   return(p)
 }
 ```
