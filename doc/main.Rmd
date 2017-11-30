@@ -625,6 +625,8 @@ Obviously, we can get predictions in this step. In next step, we will compare th
 Ranked scoring for the first data set.
 ```{r, eval=FALSE}
 #predictions are done by many group members, can seen in "./lib/
+#There are two version of ranked_scroing, see"./lib/rank_scoring.R" and "./lib/ranked_scoring2.0.R"
+
 source("../lib/function+for+making+prediction.R")
 ```
 
