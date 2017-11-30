@@ -336,7 +336,7 @@ expectation <- function(mu,gamma,matrixk,c){
   theta<-NULL
   N<-nrow(matrixk)
   for (i in 1:c){
-    gamma_c<-gamma[((c-1)*6+1):(6*c),]
+    gamma_c<-gamma[((i-1)*6+1):(6*i),]
     gamma_c<-as.vector(t(gamma_c))
     gamma_c<-matrix(rep(gamma_c,each=N),nrow=N)
     Di<-matrixk*gamma_c
