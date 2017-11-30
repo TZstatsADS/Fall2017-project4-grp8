@@ -476,6 +476,22 @@ memory_based_prediction <- function(train_data, w){
   return(p)
 }
 
+###prediction for web
+predict.general<-function(data,sim){
+  #sim<-abs(sim)
+  p<- matrix(NA, nrow = nrow(data), ncol = ncol(data)-1)
+  norm<-t(apply(data[,-1],1,scale))
+  
+  for (a in 1:nrow(data)){
+    for(i in 1:ncol(data)-1){
+      p[a,i] <- mean(data[a,-1]) + sd(data[a,-1]) * sum(norm[,i]* sim[a,]) / sum(sim[a,])
+    }
+    print(a)
+  }
+  return(p)
+}
+
+###prediction for web with neigbors
 predict.nei<-function(data,sim,nei){
   #sim<-abs(sim)
   p<- matrix(NA, nrow = nrow(data), ncol = ncol(data)-1)
@@ -590,6 +606,7 @@ Obviously, we can get predictions in this step. In next step, we will compare th
 
 Ranked scoring for the first data set.
 ```{r, eval=FALSE}
+#predictions are done by many group members
 source("../lib/function+for+making+prediction.R")
 ```
 
@@ -597,6 +614,7 @@ source("../lib/function+for+making+prediction.R")
 
 Mean absolute error is the average of absolute value of the difference between the prediction and actual value from test data set. The calculation results are as follows.
 ```{r, eval=FALSE}
+#predictions are done by many group members, can seen in "./lib.predict.R" 
 load("../output/submv_result.Rdata")
 ```
 
