@@ -49,35 +49,9 @@ predict.nei<-function(data,sim,nei){
   return(p)
 }
 
-# load("~/Desktop/Proj4/pl_web_msd_n20_th0.6.Rdata")
-# web.msd.nei.p<-predict.nei(web.train.matrix,web.msdiff.sim,result)
-# save(web.msd.nei.p,file="~/Desktop/Proj4/web.msd.nei.p.Rdata")
-
-# p<- matrix(NA, nrow = nrow(web.train.matrix), ncol = ncol(web.train.matrix))
-# norm<-t(apply(web.train.matrix[,-1],1,scale))
-# 
-# for (a in 1:nrow(web.train.matrix)){
-#   for(i in 1:ncol(web.train.matrix)-1){
-#   
-#     p[a,i] <- mean(web.train.matrix[a,-1]) + sd(web.train.matrix[a,-1]) * sum(norm[,i]* web.msdiff.sim[a,]) / sum(web.msdiff.sim[a,])
-#   }
-#   print(a)
-# }
-# 
-# p2<- matrix(NA, nrow = nrow(mv.train.matrix), ncol = ncol(mv.train.matrix)-1)
-# norm<-t(apply(mv.train.matrix[,-1],1,scale))
-# 
-# 
-# for (a in 1:nrow(mv.train.matrix)){
-#   for(i in 1:ncol(mv.train.matrix)-1){
-#     
-#     p2[a,i] <- mean(mv.train.matrix[a,-1]) + sd(mv.train.matrix[a,-1]) * sum(norm[,i]* mv.msdiff.sim[a,]) / sum(mv.msdiff.sim[a,])
-#   }
-#   print(a)
-# }
 
 
-#############################movie##############
+#############################movie###############
 
 
 predict.mv.general<-function(data,test,sim){
@@ -86,7 +60,7 @@ predict.mv.general<-function(data,test,sim){
   train.movie<-colnames(data[,-1])
   
   p<- matrix(NA, nrow = nrow(test), ncol = ncol(test)-1)
-  norm<-t(apply(data[,-1],1,scale))
+  norm<-abs(t(apply(data[,-1],1,scale)))
   
   for (a in 1:nrow(test)){
       test.sub<-test[a,-1]
@@ -104,6 +78,72 @@ predict.mv.general<-function(data,test,sim){
   }
   return(p)
 }
+
+############movie full###################
+mv.sp.sim<-(mv.sp.sim-min(mv.sp.sim))/(max(mv.sp.sim)-min(mv.sp.sim))
+range(mv.sp.sim)
+
+#sim
+mv.sp.p<- predict.mv.general(mv.train.matrix,mv.test.matrix,mv.sp.sim)
+mv.etp.p<-predict.mv.general(mv.train.matrix,mv.test.matrix,mv.etp.sim)
+mv.msd.p.abs<-predict.mv.general(mv.train.matrix,mv.test.matrix,mv.msdiff.sim)
+
+save(mv.sp.p,file="~/Desktop/Proj4/mv.sp.p.Rdata")
+save(mv.etp.p,file="~/Desktop/Proj4/mv.etp.p.Rdata")
+save(mv.msd.p,file="~/Desktop/Proj4/mv.msd.p.Rdata")
+save(mv.msd.p.abs,file="~/Desktop/Proj4/mv.msd.p.abs.Rdata")
+
+mv.sp.mae<- mean(as.matrix(abs((mv.test.matrix[,-1]-mv.sp.p))),na.rm=T)
+mv.etp.mae<-mean(as.matrix(abs((mv.test.matrix[,-1]-mv.etp.p))),na.rm=T)
+mv.msd.mae<-mean(as.matrix(abs((mv.test.matrix[,-1]-mv.msd.p))),na.rm=T)
+mv.msd.mae.abs<-mean(as.matrix(abs((mv.test.matrix[,-1]-mv.msd.p.abs))),na.rm=T)
+
+#sim+sig
+load(file="~/Desktop/Proj4/movietrain_significance_weighting_n=11.rdata")
+
+newsim<-mv.sp.sim * movie_train_a_11
+mv.sp.sig.p<-predict.mv.general(mv.train.matrix,mv.test.matrix,newsim)
+
+newsim<-mv.etp.sim * movie_train_a_11
+mv.etp.sig.p<-predict.mv.general(mv.train.matrix,mv.test.matrix,newsim)
+
+newsim<-mv.msdiff.sim * movie_train_a_11
+mv.msd.sig.p<-predict.mv.general(mv.train.matrix,mv.test.matrix,newsim)
+
+save(mv.sp.sig.p,file="~/Desktop/Proj4/mv.sp.sig.p.Rdata")
+save(mv.etp.sig.p,file="~/Desktop/Proj4/mv.etp.sig.p.Rdata")
+save(mv.msd.sig.p,file="~/Desktop/Proj4/mv.msd.sig.p.Rdata")
+
+mv.sp.sig.mae<- mean(as.matrix(abs((mv.test.matrix[,-1]-mv.sp.sig.p))),na.rm=T)
+mv.etp.sig.mae<-mean(as.matrix(abs((mv.test.matrix[,-1]-mv.etp.sig.p))),na.rm=T)
+mv.msd.sig.mae<-mean(as.matrix(abs((mv.test.matrix[,-1]-mv.msd.sig.p))),na.rm=T)
+
+#sim+var
+
+load(file="~/Desktop/Proj4/movie_variance_weights.rdata")
+mv.var.p<-predict.mv.general(mv.train.matrix, mv.test.matrix, var_weighted_w)
+mv.var.mae<-mean(as.matrix(abs((mv.test.matrix[,-1]-mv.var.p))),na.rm=T)
+
+
+
+mv_result = data.frame(Similarity = c('/', 'Significance Weighting','Variance Weighting'), 
+                          Spearman = c(mv.sp.mae, mv.sp.sig.mae, mv.var.mae), 
+                          Entropy = c(mv.etp.mae, mv.etp.sig.mae,"/"), 
+                          Mean_Square_Diff = c(mv.msd.mae.abs, mv.msd.sig.mae,"/"))
+mv_result
+save(mv_result,file="~/Desktop/Proj4/mv_result.Rdata")
+
+
+
+
+
+
+
+
+
+
+
+
 
 ###########sub + mv + general #############
 mv.test.sub.l<-mv.test.matrix[1:100,]
@@ -130,16 +170,6 @@ submv.msd.mae
 # length(ll[!is.na(ll)])
 # load("~/Desktop/Proj4/mv.sp.sim.Rdata")
 # load("~/Desktop/Proj4/web.sp.sim.Rdata")
-
-
-# mv.sp.p<-predict.mv.general(mv.train.matrix,mv.test.matrix,mv.sp.sim)
-# save(mv.sp.p,file="~/Desktop/Proj4/mv.sp.p.Rdata")
-# 
-# mv.etp.p<-predict.mv.general(mv.train.matrix,mv.test.matrix,mv.etp.sim)
-# save(mv.etp.p,file="~/Desktop/Proj4/mv.etp.p.Rdata")
-# 
-# web.msd.p<-predict.general(web.train.matrix,web.msdiff.sim)
-# save(web.msd.p,file="~/Desktop/Proj4/web.msd.p.Rdata")
 
 
 #############sub + mv + VARIANCE +general ##############
@@ -238,4 +268,33 @@ web_result = data.frame(Model = c('/', 'Significance Weighting',
                                       "NA", web.etp.nei.rs), 
                           Mean_Square_Diff = web.msd.rs, web.msd.sig.rs, 
                                       "NA", web.msd.nei.rs)
+
+
+
+# load("~/Desktop/Proj4/pl_web_msd_n20_th0.6.Rdata")
+# web.msd.nei.p<-predict.nei(web.train.matrix,web.msdiff.sim,result)
+# save(web.msd.nei.p,file="~/Desktop/Proj4/web.msd.nei.p.Rdata")
+
+# p<- matrix(NA, nrow = nrow(web.train.matrix), ncol = ncol(web.train.matrix))
+# norm<-t(apply(web.train.matrix[,-1],1,scale))
+# 
+# for (a in 1:nrow(web.train.matrix)){
+#   for(i in 1:ncol(web.train.matrix)-1){
+#   
+#     p[a,i] <- mean(web.train.matrix[a,-1]) + sd(web.train.matrix[a,-1]) * sum(norm[,i]* web.msdiff.sim[a,]) / sum(web.msdiff.sim[a,])
+#   }
+#   print(a)
+# }
+# 
+# p2<- matrix(NA, nrow = nrow(mv.train.matrix), ncol = ncol(mv.train.matrix)-1)
+# norm<-t(apply(mv.train.matrix[,-1],1,scale))
+# 
+# 
+# for (a in 1:nrow(mv.train.matrix)){
+#   for(i in 1:ncol(mv.train.matrix)-1){
+#     
+#     p2[a,i] <- mean(mv.train.matrix[a,-1]) + sd(mv.train.matrix[a,-1]) * sum(norm[,i]* mv.msdiff.sim[a,]) / sum(mv.msdiff.sim[a,])
+#   }
+#   print(a)
+# }
 
