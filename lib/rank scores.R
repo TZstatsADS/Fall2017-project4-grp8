@@ -11,7 +11,7 @@ load("../output/web.etp.p.Rdata")
 load("../output/web.msd.p.Rdata")
 load("../output/web.simrank.p.Rdata")
 load("../output/web.sp.var.p.Rdata")
-source("./rank_scoring.R")
+source("./ranked_scoring2.0.R")
 ####################
 # web.sp.sig.p_1 <- apply(web.sp.sig.p, 2, rank, ties.method="min")
 # web.msd.sig.p_1 <- apply(web.msd.sig.p, 2, rank, ties.method="min")
