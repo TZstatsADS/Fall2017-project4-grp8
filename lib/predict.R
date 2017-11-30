@@ -1,8 +1,10 @@
 
+
 ###################web################
 predict.general<-function(data,sim){
   #sim<-abs(sim)
   p<- matrix(NA, nrow = nrow(data), ncol = ncol(data)-1)
+  #norm<-t(apply(data[,-1],1,scale))
   norm<-t(apply(data[,-1],1,scale))
   
   for (a in 1:nrow(data)){
@@ -14,11 +16,14 @@ predict.general<-function(data,sim){
   return(p)
 }
 
+web.sp.sim<-(web.sp.sim-min(web.sp.sim))/(max(web.sp.sim)-min(web.sp.sim))
+range(web.sp.sim)
 web.sp.p<-predict.general(web.train.matrix,web.sp.sim)
 save(web.sp.p,file="~/Desktop/Proj4/web.sp.p.Rdata")
 
+
 web.etp.p<-predict.general(web.train.matrix,web.etp.sim)
-save(web.etp.p,file="~/Desktop/Proj4/web.etp.p.Rdata")
+save(web.etp.p.abs,file="~/Desktop/Proj4/web.etp.p.Rdata")
 
 web.msd.p<-predict.general(web.train.matrix,web.msdiff.sim)
 save(web.msd.p,file="~/Desktop/Proj4/web.msd.p.Rdata")
@@ -36,18 +41,49 @@ predict.nei<-function(data,sim,nei){
 
   for (a in 1:nrow(data)){
     
-    sim.sub<-sim[a,nei[a,]] #20
-    nei.sub<-data[nei[a, ],-1] #20*85
+    nb<-nei[a,]
+    nb<-nb[!is.na(nb)]
     
+    if(length(nb)==0){
+      p[a,]<-rep(mean(data[a,-1]),ncol(data)-1)
+    }
+    
+    else{
+    sim.sub<-sim[a,nb] #20
+    nei.sub<-data[nb,-1] #20*85
+  
     for(i in 1:ncol(data)-1){
       nei.norm <- (nei.sub[ ,i]-apply(nei.sub, 1, mean))/apply(nei.sub, 1, sd) #20
       p[a,i] <- mean(data[a,-1]) + sd(data[a,-1]) * sum(nei.norm * sim.sub) / sum(sim.sub)
     }
     
+    }
+    
     print(a)
   }
+  
   return(p)
 }
+
+load("~/Desktop/Proj4/pl_web_msd_n20_th0.6.Rdata")
+web.msd.nei.p<-predict.nei(web.train.matrix,web.msdiff.sim,result)
+save(web.msd.nei.p,file="~/Desktop/Proj4/web.msd.nei.p.Rdata")
+rank_scoring(web.msd.nei.p, web.test.matrix, 5)
+
+range(web.sp.sim)
+load("~/Desktop/Proj4/pl_web_sp_n20_th0.6.Rdata")
+web.sp.nei.p<-predict.nei(web.train.matrix,web.sp.sim,result)
+save(web.sp.nei.p,file="~/Desktop/Proj4/web.sp.nei.p.Rdata")
+rank_scoring(web.sp.nei.p, web.test.matrix, 5)
+
+load("~/Desktop/Proj4/web.etp.sim.Rdata")
+load("~/Desktop/Proj4/pl_web_entropy_n20_th8.Rdata")
+range(web.etp.sim)
+web.etp.nei.p<-predict.nei(web.train.matrix,web.etp.sim,result)
+save(web.etp.nei.p,file="~/Desktop/Proj4/web.etp.nei.p.Rdata")
+rank_scoring(web.sp.nei.p, web.test.matrix, 5)
+
+
 
 
 
@@ -123,7 +159,7 @@ mv.msd.sig.mae<-mean(as.matrix(abs((mv.test.matrix[,-1]-mv.msd.sig.p))),na.rm=T)
 load(file="~/Desktop/Proj4/movie_variance_weights.rdata")
 mv.var.p<-predict.mv.general(mv.train.matrix, mv.test.matrix, var_weighted_w)
 mv.var.mae<-mean(as.matrix(abs((mv.test.matrix[,-1]-mv.var.p))),na.rm=T)
-
+save(mv.var.p,file="~/Desktop/Proj4/mv.var.p.Rdata")
 
 
 mv_result = data.frame(Similarity = c('/', 'Significance Weighting','Variance Weighting'), 
@@ -132,17 +168,6 @@ mv_result = data.frame(Similarity = c('/', 'Significance Weighting','Variance We
                           Mean_Square_Diff = c(mv.msd.mae.abs, mv.msd.sig.mae,"/"))
 mv_result
 save(mv_result,file="~/Desktop/Proj4/mv_result.Rdata")
-
-
-
-
-
-
-
-
-
-
-
 
 
 ###########sub + mv + general #############
