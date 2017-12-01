@@ -9,7 +9,7 @@ load("../output/sn_web_sp_n=20_th=0.6.Rdata")
 nei1 = value_matrix
 ######################################################
 web.sp.n.p = predict.nei(data1,sim1,nei1)
-save(web.sp.n.p,file = "../output/web.sp.n.p.Rdata")
+save(web.sp.n.p,file = "../output/web.sp.n.p_1e-17.Rdata")
 #####################################################
 ####### web msd neighbor
 data2 = web.train.matrix
@@ -19,7 +19,7 @@ load("../output/sn_web_msd_n=20_th=0.6.Rdata")
 nei2 = value_matrix
 ######################################################
 web.msd.n.p = predict.nei(data2,sim2,nei2)
-save(web.msd.n.p,file = "../output/web.msd.n.p.Rdata")
+save(web.msd.n.p,file = "../output/web.msd.n.p_1e-17.Rdata")
 #####################################################
 ####### web etp neighbor
 data3 = web.train.matrix
