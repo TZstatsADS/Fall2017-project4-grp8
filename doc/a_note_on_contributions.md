@@ -10,7 +10,7 @@ We applied different variants of similarity weighting, which include Spearman, E
 
 + Sihui Shao: Created the Expectation and the Maximization function, expected rating prediction function and implemented the EM algorithm on EachMovie data for the Cluster Model; created functions in Python to implement SimRank on EachMovie data.
 
-+ Sijian Xuan
++ Sijian Xuan: Did data processing for later use, wrote the codes for Significance Weighting and Combined Selecting Neihborhoods. Helped make the prediction with Chenyun and calculated the score for different methods.
 
 + Yajie Guo: Conducted rating normalization for web data set and movie data set. Wrote prediction function for web data set and movie data set. Main file writeup. Readme writeup.
 
