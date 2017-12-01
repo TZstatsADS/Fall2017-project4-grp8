@@ -12,6 +12,6 @@ We applied different variants of similarity weighting, which include Spearman, E
 
 + Sijian Xuan
 
-+ Yajie Guo
++ Yajie Guo: Conducted rating normalization for web data set and movie data set. Wrote prediction function for web data set and movie data set. Main file writeup. Readme writeup.
 
 + Yiran Li: Created functions to calculate Spearman Correlation Weighting, Variance Weighting, a memory-based prediction function, a cluster model prediction function, a cluster model cross validation function for the number of clusters C.
